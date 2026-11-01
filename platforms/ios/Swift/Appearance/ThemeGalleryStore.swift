@@ -356,11 +356,11 @@ final class ThemeGalleryStore: ObservableObject {
     // Hide the presenting menu without destroying its navigation
     // stack, so previews reveal the one existing background renderer.
     @Published var isPreviewing = false
-    @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private var customDraftPersistenceTask:
+    private let defaults: UserDefaults
+    private var customDraftPersistenceTask:
         Task<Void, Never>?
     // Entries this build cannot decode, kept as stored so a build that can still has them.
-    @ObservationIgnored private var undecodableThemes: [Any]
+    private var undecodableThemes: [Any]
     private static let themesKey = "ARMSX2iOSSavedAppearanceThemesV1"
     private static let draftKey = "ARMSX2iOSCustomAppearanceDraftV1"
     private static let activeSavedThemeKey =

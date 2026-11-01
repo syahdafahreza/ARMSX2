@@ -5,16 +5,6 @@ import SwiftUI
 
 #if !os(macOS)
 
-// MARK: - Observation Compatibility
-
-@propertyWrapper
-public struct ObservationIgnored<T> {
-    public var wrappedValue: T
-    public init(wrappedValue: T) {
-        self.wrappedValue = wrappedValue
-    }
-}
-
 // MARK: - URL Documents Directory Compatibility
 
 public extension URL {

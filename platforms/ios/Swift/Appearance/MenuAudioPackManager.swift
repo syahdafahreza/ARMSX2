@@ -158,38 +158,38 @@ final class MenuAudioPackManager: ObservableObject {
     @Published private(set) var customUIAudioEnabled = true
     @Published private(set) var customSounds: Set<Sound> = []
 
-    @ObservationIgnored private var soundURLs: [Sound: URL] = [:]
-    @ObservationIgnored private var customSoundURLs: [Sound: URL] = [:]
-    @ObservationIgnored private var soundVolumes: [Sound: Double] = [:]
+    private var soundURLs: [Sound: URL] = [:]
+    private var customSoundURLs: [Sound: URL] = [:]
+    private var soundVolumes: [Sound: Double] = [:]
     // Retain the encoded source bytes and prepared players for the lifetime of
     // the installed pack. `AVAudioPlayer(data:)` then never has to reopen a
     // file while rapid controller events are driving the UI.
-    @ObservationIgnored private var soundData: [Sound: Data] = [:]
-    @ObservationIgnored private var introHasFinished = false
-    @ObservationIgnored private var interfaceIsActive = false
-    @ObservationIgnored private var mainInterfaceIsActive = false
-    @ObservationIgnored private var applicationIsActive = true
-    @ObservationIgnored private var audioSessionPrepared = false
-    @ObservationIgnored private var startupPlayer: AVAudioPlayer?
-    @ObservationIgnored private var startupCompletionTask: Task<Void, Never>?
-    @ObservationIgnored private var startupRetryTask: Task<Void, Never>?
-    @ObservationIgnored private var startupPlaybackPending = false
-    @ObservationIgnored private var startupRetryAttempt = 0
-    @ObservationIgnored private var backgroundPlayer: AVAudioPlayer?
-    @ObservationIgnored private var pauseMusicPlayer: AVAudioPlayer?
-    @ObservationIgnored private var previewPlayer: AVAudioPlayer?
-    @ObservationIgnored private var previewSound: Sound?
-    @ObservationIgnored private var backgroundFadeTask: Task<Void, Never>?
-    @ObservationIgnored private var gameLaunchCompletionTask: Task<Void, Never>?
-    @ObservationIgnored private var gameLaunchAudioActive = false
-    @ObservationIgnored private var automaticGameStartupActive = false
-    @ObservationIgnored private var effectPlayers: [Sound: AVAudioPlayer] = [:]
-    @ObservationIgnored private var pendingTouchNavigationTask: Task<Void, Never>?
-    @ObservationIgnored private var stoppingGamePendingForMainInterface = false
-    @ObservationIgnored private var stoppingGameWaitsForVMShutdown = false
-    @ObservationIgnored private var emulationAudioRecoveryTask: Task<Void, Never>?
-    @ObservationIgnored private var selectionSuppressedUntil: TimeInterval = 0
-    @ObservationIgnored private var lastEventPlaybackTimes: [Event: TimeInterval] = [:]
+    private var soundData: [Sound: Data] = [:]
+    private var introHasFinished = false
+    private var interfaceIsActive = false
+    private var mainInterfaceIsActive = false
+    private var applicationIsActive = true
+    private var audioSessionPrepared = false
+    private var startupPlayer: AVAudioPlayer?
+    private var startupCompletionTask: Task<Void, Never>?
+    private var startupRetryTask: Task<Void, Never>?
+    private var startupPlaybackPending = false
+    private var startupRetryAttempt = 0
+    private var backgroundPlayer: AVAudioPlayer?
+    private var pauseMusicPlayer: AVAudioPlayer?
+    private var previewPlayer: AVAudioPlayer?
+    private var previewSound: Sound?
+    private var backgroundFadeTask: Task<Void, Never>?
+    private var gameLaunchCompletionTask: Task<Void, Never>?
+    private var gameLaunchAudioActive = false
+    private var automaticGameStartupActive = false
+    private var effectPlayers: [Sound: AVAudioPlayer] = [:]
+    private var pendingTouchNavigationTask: Task<Void, Never>?
+    private var stoppingGamePendingForMainInterface = false
+    private var stoppingGameWaitsForVMShutdown = false
+    private var emulationAudioRecoveryTask: Task<Void, Never>?
+    private var selectionSuppressedUntil: TimeInterval = 0
+    private var lastEventPlaybackTimes: [Event: TimeInterval] = [:]
 
     var hasInstalledPack: Bool {
         installedPackName != nil && Self.containsRequiredSounds(soundURLs)

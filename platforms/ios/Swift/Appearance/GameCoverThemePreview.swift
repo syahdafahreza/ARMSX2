@@ -27,9 +27,9 @@ final class GameCoverThemePreviewStore: ObservableObject {
 
     @Published private(set) var preview: GameCoverThemePreview?
 
-    @ObservationIgnored private var analysisTask: Task<Void, Never>?
-    @ObservationIgnored private var requestToken = UUID()
-    @ObservationIgnored private var cache: [String: CoverThemeAnalysis] = [:]
+    private var analysisTask: Task<Void, Never>?
+    private var requestToken = UUID()
+    private var cache: [String: CoverThemeAnalysis] = [:]
 
     private init() {}
 

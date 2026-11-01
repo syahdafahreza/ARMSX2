@@ -243,89 +243,89 @@ final class ControllerAccessibilityNavigationSession: ObservableObject {
         let destinationOffset: CGPoint
     }
 
-    @ObservationIgnored private weak var controllerInput: MenuControllerInputRouter?
-    @ObservationIgnored private weak var scopeView: UIView?
-    @ObservationIgnored private weak var window: UIWindow?
-    @ObservationIgnored private var measuredScopeFrame = CGRect.zero
+    private weak var controllerInput: MenuControllerInputRouter?
+    private weak var scopeView: UIView?
+    private weak var window: UIWindow?
+    private var measuredScopeFrame = CGRect.zero
     /// Measured when read: an ancestor can move the scope without laying it out again.
     private var scopeFrame: CGRect {
         guard let scopeView, let window = scopeView.window else { return measuredScopeFrame }
         return scopeView.convert(scopeView.bounds, to: window)
     }
-    @ObservationIgnored private var scopeKey = ""
-    @ObservationIgnored private var registrationID: UUID?
-    @ObservationIgnored private var targets: [String: Target] = [:]
-    @ObservationIgnored private var scrollOwners: [String: WeakView] = [:]
-    @ObservationIgnored private var registrationKeys: [UUID: String] = [:]
-    @ObservationIgnored private let scrollSurfaces = NSHashTable<AnyObject>.weakObjects()
-    @ObservationIgnored private var duplicateBaseKeys = Set<String>()
-    @ObservationIgnored private var registrationSequence: UInt64 = 0
-    @ObservationIgnored private var declaredOrder: [String] = []
-    @ObservationIgnored private var declaredOrderSet = Set<String>()
-    @ObservationIgnored private var declaredOrderIndex: [String: Int] = [:]
-    @ObservationIgnored private var focusedKey: String?
-    @ObservationIgnored private var permitsAutomaticFocus = true
-    @ObservationIgnored private var scrollToTarget: ((String, UnitPoint) -> Void)?
-    @ObservationIgnored private var onBack: (@MainActor () -> Bool)?
-    @ObservationIgnored private var onContextMenu: (@MainActor (String) -> Bool)?
-    @ObservationIgnored private var onPreviousTab: (@MainActor () -> Bool)?
-    @ObservationIgnored private var onNextTab: (@MainActor () -> Bool)?
-    @ObservationIgnored private var onBoundary: (@MainActor (MenuControllerCommand) -> Bool)?
-    @ObservationIgnored private var boundaryRules: [ControllerAccessibilityBoundaryRule] = []
-    @ObservationIgnored private var directionalLinks: [ControllerAccessibilityDirectionalLink] = []
-    @ObservationIgnored private var pageDirectionalLinks: [ControllerAccessibilityDirectionalLink] = []
-    @ObservationIgnored private var prioritizesDirectionalLinks = false
-    @ObservationIgnored private var confinesHorizontalFocusMovement = false
-    @ObservationIgnored private var wrapsAtListEnds = false
-    @ObservationIgnored private var focusScrollBehavior:
+    private var scopeKey = ""
+    private var registrationID: UUID?
+    private var targets: [String: Target] = [:]
+    private var scrollOwners: [String: WeakView] = [:]
+    private var registrationKeys: [UUID: String] = [:]
+    private let scrollSurfaces = NSHashTable<AnyObject>.weakObjects()
+    private var duplicateBaseKeys = Set<String>()
+    private var registrationSequence: UInt64 = 0
+    private var declaredOrder: [String] = []
+    private var declaredOrderSet = Set<String>()
+    private var declaredOrderIndex: [String: Int] = [:]
+    private var focusedKey: String?
+    private var permitsAutomaticFocus = true
+    private var scrollToTarget: ((String, UnitPoint) -> Void)?
+    private var onBack: (@MainActor () -> Bool)?
+    private var onContextMenu: (@MainActor (String) -> Bool)?
+    private var onPreviousTab: (@MainActor () -> Bool)?
+    private var onNextTab: (@MainActor () -> Bool)?
+    private var onBoundary: (@MainActor (MenuControllerCommand) -> Bool)?
+    private var boundaryRules: [ControllerAccessibilityBoundaryRule] = []
+    private var directionalLinks: [ControllerAccessibilityDirectionalLink] = []
+    private var pageDirectionalLinks: [ControllerAccessibilityDirectionalLink] = []
+    private var prioritizesDirectionalLinks = false
+    private var confinesHorizontalFocusMovement = false
+    private var wrapsAtListEnds = false
+    private var focusScrollBehavior:
         ControllerAccessibilityFocusScrollBehavior = .revealIfNeeded
-    @ObservationIgnored private var scrollAnimationDuration: Double = 0.22
-    @ObservationIgnored private var focusViewportEdgeMargin: CGFloat = 12
-    @ObservationIgnored private var focusTopAlignmentMargin: CGFloat = 0
-    @ObservationIgnored private var focusBottomAlignmentMargin: CGFloat = 0
-    @ObservationIgnored private var onActivateFocusedLabel: (@MainActor (String) -> Bool)?
-    @ObservationIgnored private var onAdjustFocusedTarget:
+    private var scrollAnimationDuration: Double = 0.22
+    private var focusViewportEdgeMargin: CGFloat = 12
+    private var focusTopAlignmentMargin: CGFloat = 0
+    private var focusBottomAlignmentMargin: CGFloat = 0
+    private var onActivateFocusedLabel: (@MainActor (String) -> Bool)?
+    private var onAdjustFocusedTarget:
         (@MainActor (String, String?, Bool) -> Void)?
-    @ObservationIgnored private var preferredInitialFocusLabel: String?
-    @ObservationIgnored private var preferredLastEntryLabel: String?
-    @ObservationIgnored private var preferredTrailingFocusLabels: [String] = []
-    @ObservationIgnored private var mountedTargetTask: Task<Void, Never>?
-    @ObservationIgnored private var focusedPresentationTask: Task<Void, Never>?
-    @ObservationIgnored private var focusPresentationRevealTask:
+    private var preferredInitialFocusLabel: String?
+    private var preferredLastEntryLabel: String?
+    private var preferredTrailingFocusLabels: [String] = []
+    private var mountedTargetTask: Task<Void, Never>?
+    private var focusedPresentationTask: Task<Void, Never>?
+    private var focusPresentationRevealTask:
         Task<Void, Never>?
-    @ObservationIgnored private var scrollPresentationDisplayLink: CADisplayLink?
-    @ObservationIgnored private var scrollPresentationDriver:
+    private var scrollPresentationDisplayLink: CADisplayLink?
+    private var scrollPresentationDriver:
         ControllerAccessibilityDisplayLinkDriver?
-    @ObservationIgnored private var scrollPresentationKey: String?
-    @ObservationIgnored private var scrollPresentationStartTime: CFTimeInterval = 0
-    @ObservationIgnored private var scrollPresentationLastFrame: CGRect?
-    @ObservationIgnored private var scrollPresentationStableFrameCount = 0
-    @ObservationIgnored private var focusMotion: FocusMotion?
-    @ObservationIgnored private var scrollPresentationCompletionTask:
+    private var scrollPresentationKey: String?
+    private var scrollPresentationStartTime: CFTimeInterval = 0
+    private var scrollPresentationLastFrame: CGRect?
+    private var scrollPresentationStableFrameCount = 0
+    private var focusMotion: FocusMotion?
+    private var scrollPresentationCompletionTask:
         Task<Void, Never>?
-    @ObservationIgnored private var readinessTask: Task<Void, Never>?
-    @ObservationIgnored private var pendingFocusKey: String?
-    @ObservationIgnored var ownerDeclaresOrder = false
-    @ObservationIgnored private var isRevealingRows = false
+    private var readinessTask: Task<Void, Never>?
+    private var pendingFocusKey: String?
+    var ownerDeclaresOrder = false
+    private var isRevealingRows = false
     // Preserve input timing across the asynchronous lazy-row mount.
-    @ObservationIgnored private var focusRepeatAcceleration: Double?
-    @ObservationIgnored private var pendingDirectionalMove:
+    private var focusRepeatAcceleration: Double?
+    private var pendingDirectionalMove:
         (direction: MenuControllerCommand, acceleration: Double?)?
-    @ObservationIgnored private var pendingFocusExpiryTask: Task<Void, Never>?
-    @ObservationIgnored private var scopeRestorationTask: Task<Void, Never>?
-    @ObservationIgnored private var adjustedValuePublicationTask:
+    private var pendingFocusExpiryTask: Task<Void, Never>?
+    private var scopeRestorationTask: Task<Void, Never>?
+    private var adjustedValuePublicationTask:
         Task<Void, Never>?
-    @ObservationIgnored private var pendingScrollFocusPublication = false
-    @ObservationIgnored private var focusIsSuspendedForScrolling = false
-    @ObservationIgnored private weak var rightStickScrollView: UIScrollView?
-    @ObservationIgnored private var rightStickManualFocusKey: String?
-    @ObservationIgnored private var rightStickFocusCandidates: [ControllerNavigationScrollFocusCandidate]?
-    @ObservationIgnored private var rightStickViewportSize = CGSize.zero
-    @ObservationIgnored private weak var publishedScrollWindow: UIWindow?
-    @ObservationIgnored private var publishedScrollFrame: CGRect?
-    @ObservationIgnored private var presentedFocusKey: String?
+    private var pendingScrollFocusPublication = false
+    private var focusIsSuspendedForScrolling = false
+    private weak var rightStickScrollView: UIScrollView?
+    private var rightStickManualFocusKey: String?
+    private var rightStickFocusCandidates: [ControllerNavigationScrollFocusCandidate]?
+    private var rightStickViewportSize = CGSize.zero
+    private weak var publishedScrollWindow: UIWindow?
+    private var publishedScrollFrame: CGRect?
+    private var presentedFocusKey: String?
     @Published private(set) var focusPresentationIsHiddenForScrolling = false
-    @ObservationIgnored private var interactionSequence: UInt64 = 0
+    private var interactionSequence: UInt64 = 0
 
     @Published private var focusPresentation = FocusPresentation.empty
     @Published private(set) var latestOrbInteraction: ControllerNavigationOrbInteraction?

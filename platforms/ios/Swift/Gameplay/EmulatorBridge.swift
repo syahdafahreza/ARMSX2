@@ -80,10 +80,10 @@ enum StikDebugLauncher {
 final class EmulatorBridge: ObservableObject, @unchecked Sendable {
     static let shared = EmulatorBridge()
 
-    @ObservationIgnored private var virtualRightTouchX: Float = 0
-    @ObservationIgnored private var virtualRightTouchY: Float = 0
-    @ObservationIgnored private var virtualRightMotionX: Float = 0
-    @ObservationIgnored private var virtualRightMotionY: Float = 0
+    private var virtualRightTouchX: Float = 0
+    private var virtualRightTouchY: Float = 0
+    private var virtualRightMotionX: Float = 0
+    private var virtualRightMotionY: Float = 0
 
     private init() {}
 

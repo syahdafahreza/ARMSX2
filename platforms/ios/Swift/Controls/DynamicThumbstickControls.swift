@@ -785,10 +785,10 @@ final class DynamicCrosshairRuntimeState: ObservableObject {
     @Published private(set) var shotTiltRadians: CGFloat = 0
     @Published private(set) var rapidFireStartedAt = 0.0
 
-    @ObservationIgnored private var sourceMotion: [DynamicCrosshairMotionSource: DynamicThumbstickVector] = [:]
-    @ObservationIgnored private var settlingTask: Task<Void, Never>?
-    @ObservationIgnored private var shotTask: Task<Void, Never>?
-    @ObservationIgnored private var swipeHideTask: Task<Void, Never>?
+    private var sourceMotion: [DynamicCrosshairMotionSource: DynamicThumbstickVector] = [:]
+    private var settlingTask: Task<Void, Never>?
+    private var shotTask: Task<Void, Never>?
+    private var swipeHideTask: Task<Void, Never>?
 
     func setAiming(_ aiming: Bool) {
         isAiming = aiming

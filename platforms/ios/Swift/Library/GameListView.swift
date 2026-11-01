@@ -1161,14 +1161,14 @@ private struct GameLibraryNowRunningControllerFocusModifier: ViewModifier {
 
 @MainActor
 private final class GameLibraryControllerFocusState: ObservableObject {
-    @ObservationIgnored private var storedSelectedGameID: String?
-    @ObservationIgnored private var storedIsActive = false
-    @ObservationIgnored private var isLibraryZone = true
-    @ObservationIgnored private var isLibraryVisible = true
-    @ObservationIgnored private var cardStates: [String: GameLibraryControllerCardFocusState] = [:]
-    @ObservationIgnored private var gameIndexByID: [String: Int] = [:]
-    @ObservationIgnored private var scrollSequence: UInt64 = 0
-    @ObservationIgnored private var suppressNextSelectionScroll = false
+    private var storedSelectedGameID: String?
+    private var storedIsActive = false
+    private var isLibraryZone = true
+    private var isLibraryVisible = true
+    private var cardStates: [String: GameLibraryControllerCardFocusState] = [:]
+    private var gameIndexByID: [String: Int] = [:]
+    private var scrollSequence: UInt64 = 0
+    private var suppressNextSelectionScroll = false
 
     @Published var selectionScrollRequest: GameLibrarySelectionScrollRequest?
 
@@ -1360,7 +1360,7 @@ private struct GameLibraryControllerRightStickTarget: View {
 @MainActor
 private final class GameLibraryScrollRestoreState: ObservableObject {
     @Published var topRequestSequence: UInt64 = 0
-    @ObservationIgnored private var consumedTopRequestSequence: UInt64 = 0
+    private var consumedTopRequestSequence: UInt64 = 0
 
     func requestTopRestore() {
         topRequestSequence &+= 1

@@ -75,7 +75,7 @@ final class AppState: ObservableObject, @unchecked Sendable {
     @Published var pendingRestartGame: String?
     @Published var pendingLibraryExport: String?
     @Published private(set) var automaticGameStartupPending: Bool
-    @ObservationIgnored private var automaticGameStartupStarted = false
+    private var automaticGameStartupStarted = false
     @Published var gameplayLaunchTransition: GameplayLaunchTransition?
     @Published var gameplayLaunchControlsVisible = true
     @Published var gameplayLaunchBackgroundVisible = false
@@ -114,13 +114,13 @@ final class AppState: ObservableObject, @unchecked Sendable {
         }
     }
 
-    @ObservationIgnored private var systemChromeNotificationsEnabled = false
-    @ObservationIgnored private var pendingBootAction: (() -> Void)?
-    @ObservationIgnored private var leaveSave = 0
-    @ObservationIgnored private var shutdownObserver: NSObjectProtocol?
+    private var systemChromeNotificationsEnabled = false
+    private var pendingBootAction: (() -> Void)?
+    private var leaveSave = 0
+    private var shutdownObserver: NSObjectProtocol?
 
-    @ObservationIgnored private var autoBootObserver: NSObjectProtocol?
-    @ObservationIgnored private var emulationOnlyStartupReadyObserver: NSObjectProtocol?
+    private var autoBootObserver: NSObjectProtocol?
+    private var emulationOnlyStartupReadyObserver: NSObjectProtocol?
 
     private init() {
         // Read only persisted boot policy here, never SettingsStore.shared:

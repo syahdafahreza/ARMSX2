@@ -32,9 +32,9 @@ final class BIOSLibraryState: ObservableObject {
     @Published private(set) var entries: [BIOSLibraryEntry] = []
     @Published private(set) var defaultBIOS = ""
     @Published private(set) var hasLoaded = false
-    @ObservationIgnored private var refreshTask: Task<Void, Never>?
-    @ObservationIgnored private var needsRefresh = true
-    @ObservationIgnored private var refreshCompletions:
+    private var refreshTask: Task<Void, Never>?
+    private var needsRefresh = true
+    private var refreshCompletions:
         [([BIOSLibraryEntry]) -> Void] = []
 
     private init() {}

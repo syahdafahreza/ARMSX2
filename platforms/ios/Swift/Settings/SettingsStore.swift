@@ -250,15 +250,15 @@ final class SettingsStore: ObservableObject {
 
     /// Manual EmuCore/Gamefixes toggles — see SettingsStore+GameFixes.swift.
 
-    @ObservationIgnored var suppressINIWrites = false
-    @ObservationIgnored var isProgrammaticOsdFlagChange = false
-    @ObservationIgnored var isAutoMarkingCustom = false
-    @ObservationIgnored var isProgrammaticFramePacingFlagChange = false
-    @ObservationIgnored var isAutoMarkingFramePacingCustom = false
-    @ObservationIgnored var graphicsApplyWorkItem: DispatchWorkItem?
-    @ObservationIgnored var visualSliderDragCount = 0
-    @ObservationIgnored var graphicsApplyDeferred = false
-    @ObservationIgnored var visualSliderWatchdog: DispatchWorkItem?
+    var suppressINIWrites = false
+    var isProgrammaticOsdFlagChange = false
+    var isAutoMarkingCustom = false
+    var isProgrammaticFramePacingFlagChange = false
+    var isAutoMarkingFramePacingCustom = false
+    var graphicsApplyWorkItem: DispatchWorkItem?
+    var visualSliderDragCount = 0
+    var graphicsApplyDeferred = false
+    var visualSliderWatchdog: DispatchWorkItem?
 
     // ── Emulator / CPU ──
     // writes CoreType + UseArm64Dynarec
@@ -1378,8 +1378,8 @@ final class SettingsStore: ObservableObject {
     static let stickInversionKeys = ["InvertLeftStickX", "InvertLeftStickY", "InvertRightStickX", "InvertRightStickY"]
     /// Per-game overrides for the game the cache was built from. Only the overridden keys
     /// are stored, so a change to a global still takes effect without rebuilding.
-    @ObservationIgnored private var stickInversionOverrides: [String: Bool] = [:]
-    @ObservationIgnored private var stickInversionOverridesGame = ""
+    private var stickInversionOverrides: [String: Bool] = [:]
+    private var stickInversionOverridesGame = ""
 
     /// Effective axis inversion for a stick: the per-game override if there is one, else the
     /// global. Called once per stick sample, so it must not touch the filesystem — the
