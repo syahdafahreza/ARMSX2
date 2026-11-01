@@ -339,8 +339,8 @@ struct BIOSListView: View {
                 embedded: embeddedInMenuNavigation
             )
             .toolbar {
-                if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
-                ToolbarItem(id: "menu.bootBIOS", placement: .topBarLeading) {
+                ToolbarItem(id: "menu.bootBIOS", placement: .navigationBarLeading) {
+                    if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
                     Button(action: performBootBIOSAction) {
                         Text(settings.localized("Boot BIOS"))
                             .font(.callout.weight(.semibold))
@@ -364,8 +364,10 @@ struct BIOSListView: View {
                         action: performBootBIOSAction
                     )
                     .fixedSize()
+                    }
                 }
-                ToolbarItem(id: "menu.import", placement: .topBarTrailing) {
+                ToolbarItem(id: "menu.import", placement: .navigationBarTrailing) {
+                    if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
                     Menu {
                         Button {
                             presentMenuPanel {
@@ -404,8 +406,10 @@ struct BIOSListView: View {
                         label: BIOSControllerTarget.importBIOS,
                         action: openBIOSImporter
                     )
+                    }
                 }
-                ToolbarItem(id: "menu.refresh", placement: .topBarTrailing) {
+                ToolbarItem(id: "menu.refresh", placement: .navigationBarTrailing) {
+                    if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
                     Button { loadBIOSes() } label: {
                         Image(systemName: "arrow.clockwise")
                             .menuToolbarMorphElement("refresh")
@@ -424,9 +428,9 @@ struct BIOSListView: View {
                         id: BIOSControllerTarget.refresh,
                         label: BIOSControllerTarget.refresh
                     ) { loadBIOSes() }
+                    }
                 }
                 .prefersVerticalBar()
-                }
             }
             .tint(settings.controllerToolbarColor)
             .sheet(isPresented: $showBIOSImporter) {

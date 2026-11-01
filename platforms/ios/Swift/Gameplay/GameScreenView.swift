@@ -2629,7 +2629,7 @@ private struct RetroAchievementsGamePanel: View {
             .scrollContentBackground(onClose == nil ? .automatic : .hidden)
             .navigationTitle(settings.localized("RetroAchievements"))
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button(settings.localized("Done")) {
                         close()
                     }

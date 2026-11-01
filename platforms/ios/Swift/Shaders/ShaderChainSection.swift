@@ -51,7 +51,7 @@ private struct ShaderPackInstallOptionsView: View {
             .navigationTitle(localized("Install Shader Pack"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button(localized("Cancel")) { dismiss() }
                         .controllerAccessibilityActionTarget(
                             id: "shader-install.cancel",

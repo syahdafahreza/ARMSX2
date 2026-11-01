@@ -2124,12 +2124,12 @@ struct MenuTabView: View {
                                     ? .inline : .large
                             )
                             .toolbar {
-                                if verticalSizeClass == .compact,
-                                   !(selectedTab == 0 && hideGamesScreenTitle) {
-                                    ToolbarItem(
-                                        id: "menu.collapsedTitle",
-                                        placement: .principal
-                                    ) {
+                                ToolbarItem(
+                                    id: "menu.collapsedTitle",
+                                    placement: .principal
+                                ) {
+                                    if verticalSizeClass == .compact,
+                                       !(selectedTab == 0 && hideGamesScreenTitle) {
                                         EmbeddedMenuCompactTitle(
                                             title: settings.localized(
                                                 selectedTab == 1

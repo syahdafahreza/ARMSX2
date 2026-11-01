@@ -32,6 +32,22 @@ public struct PhotosPickerItem: Equatable, Hashable, Sendable {
     public var supportedContentTypes: [UTType] { [] }
 }
 
+// MARK: - Animation Compatibility for iOS 15
+
+public extension Animation {
+    static func smooth(duration: TimeInterval = 0.35, extraBounce: Double = 0) -> Animation {
+        .easeInOut(duration: duration)
+    }
+
+    static func snappy(duration: TimeInterval = 0.25, extraBounce: Double = 0) -> Animation {
+        .spring(response: duration, dampingFraction: 0.85, blendDuration: 0)
+    }
+
+    static func bouncy(duration: TimeInterval = 0.3, extraBounce: Double = 0) -> Animation {
+        .spring(response: duration, dampingFraction: 0.7, blendDuration: 0)
+    }
+}
+
 // MARK: - NavigationStack Compatibility
 
 /// Provides a NavigationStack fallback for iOS 15, wrapping NavigationView,

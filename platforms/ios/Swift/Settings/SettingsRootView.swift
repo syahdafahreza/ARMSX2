@@ -964,8 +964,8 @@ struct SettingsRootView: View {
         .toolbar {
             // Not tied to the path: an item put back during the Back animation
             // never shows, and the next page then opens too high.
-            if verticalSizeClass == .compact {
-                ToolbarItem(id: "menu.settingsCollapsedTitle", placement: .principal) {
+            ToolbarItem(id: "menu.settingsCollapsedTitle", placement: .principal) {
+                if verticalSizeClass == .compact {
                     EmbeddedMenuCompactTitle(
                         title: settings.localized("Settings")
                     )

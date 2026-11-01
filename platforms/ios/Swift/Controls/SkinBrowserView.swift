@@ -431,7 +431,7 @@ private struct SkinPreviewSheet: View {
             .navigationTitle(skin.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button(SettingsStore.shared.localized("Done")) { dismiss() }
                 }
             }

@@ -3217,8 +3217,8 @@ struct GameListView: View {
                 embedded: embeddedInMenuNavigation
             )
             .toolbar {
-                if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
-                ToolbarItem(id: "menu.gamesBrand", placement: .topBarLeading) {
+                ToolbarItem(id: "menu.gamesBrand", placement: .navigationBarLeading) {
+                    if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
                     if useGamesLogo, let image = logoStore.image {
                         Button(action: performBootBIOSAction) {
                             Image(uiImage: image)
@@ -3254,7 +3254,8 @@ struct GameListView: View {
                         .fixedSize()
                     }
                 }
-                ToolbarItem(id: "menu.import", placement: .topBarTrailing) {
+                ToolbarItem(id: "menu.import", placement: .navigationBarTrailing) {
+                    if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
                     Button {
                         openGameImporter()
                     } label: {
@@ -3265,7 +3266,8 @@ struct GameListView: View {
                     .accessibilityLabel(settings.localized("Import Games"))
                 }
                 .prefersVerticalBar()
-                ToolbarItem(id: "menu.layout", placement: .topBarTrailing) {
+                ToolbarItem(id: "menu.layout", placement: .navigationBarTrailing) {
+                    if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
                     Menu {
                         Button {
                             selectAlternateLibraryLayout()
@@ -3302,7 +3304,8 @@ struct GameListView: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel(settings.localized("Library Layout"))
                 }
-                ToolbarItem(id: "menu.more", placement: .topBarTrailing) {
+                ToolbarItem(id: "menu.more", placement: .navigationBarTrailing) {
+                    if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
                     Menu {
                         Button {
                             presentMenuPanel {
@@ -3350,7 +3353,7 @@ struct GameListView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(settings.localized("More"))
-                }
+                    }
                 }
             }
             // UIKit owns the compact overflow button. Supplying the same
