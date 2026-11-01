@@ -20,17 +20,17 @@ fi
 case "$PLATFORM" in
 	sim)
 		SDK=iphonesimulator
-		FLAGS=(-DARMSX2_REAL_DEVICE=OFF -DARMSX2_MAC_CATALYST=OFF)
+		FLAGS=(-DARMSX2_REAL_DEVICE=OFF -DARMSX2_MAC_CATALYST=OFF "-DCMAKE_C_FLAGS=-Xclang -fno-pch-timestamp" "-DCMAKE_CXX_FLAGS=-Xclang -fno-pch-timestamp")
 		;;
 	device)
 		SDK=iphoneos
-		FLAGS=(-DARMSX2_REAL_DEVICE=ON -DARMSX2_MAC_CATALYST=OFF)
+		FLAGS=(-DARMSX2_REAL_DEVICE=ON -DARMSX2_MAC_CATALYST=OFF "-DCMAKE_C_FLAGS=-Xclang -fno-pch-timestamp" "-DCMAKE_CXX_FLAGS=-Xclang -fno-pch-timestamp")
 		;;
 	catalyst)
 		SDK=macosx
 		M="$(xcrun --sdk macosx --show-sdk-path)"
 		SUPPORT="-isystem $M/System/iOSSupport/usr/include -iframework $M/System/iOSSupport/System/Library/Frameworks -iframework $M/System/iOSSupport/System/Library/SubFrameworks"
-		FLAGS=(-DARMSX2_MAC_CATALYST=ON -DARMSX2_REAL_DEVICE=OFF "-DCMAKE_C_FLAGS=$SUPPORT" "-DCMAKE_CXX_FLAGS=$SUPPORT")
+		FLAGS=(-DARMSX2_MAC_CATALYST=ON -DARMSX2_REAL_DEVICE=OFF "-DCMAKE_C_FLAGS=$SUPPORT -Xclang -fno-pch-timestamp" "-DCMAKE_CXX_FLAGS=$SUPPORT -Xclang -fno-pch-timestamp")
 		;;
 	*) usage ;;
 esac
