@@ -1,0 +1,113 @@
+name: Build iOS IPA (iOS 15+)
+
+on:
+  push:
+    branches:
+      - ios-15-compat
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE*'
+      - '.gitignore'
+  pull_request:
+    branches:
+      - ios-15-compat
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE*'
+      - '.gitignore'
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    name: iOS IPA (arm64, iOS 15+)
+    runs-on: macos-14
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install ninja cmake
+          rustup target add aarch64-apple-ios
+
+      # Prebuilt core cache
+      - name: Compute core cache key
+        id: core-key
+        run: |
+          echo "key=ios-core-device-$({ xcodebuild -version; cmake --version | head -1; ninja --version; rustc --version; git rev-parse HEAD:pcsx2 HEAD:common HEAD:3rdparty HEAD:cmake HEAD:bin/resources/shaders HEAD:platforms/android/app/src/main/cpp/3rdparty HEAD:platforms/ios/CMakeLists.txt HEAD:platforms/ios/cmake HEAD:platforms/ios/3rdparty HEAD:platforms/ios/patches HEAD:platforms/ios/scripts/build-ios-core.sh; } | shasum | cut -c1-40)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore prebuilt core cache
+        id: core-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: platforms/ios/build/core-device
+          key: ${{ steps.core-key.outputs.key }}
+
+      - name: Touch submodules to avoid Ninja rebuild loops
+        run: find . -path ./.git -prune -o -path ./platforms/ios/build -prune -o -exec touch -h -t 200001010000 {} +
+
+      - name: Build the prebuilt core
+        run: platforms/ios/scripts/build-ios-core.sh device
+
+      - name: Save prebuilt core cache
+        if: steps.core-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: platforms/ios/build/core-device
+          key: ${{ steps.core-key.outputs.key }}
+
+      - name: Configure (CMake, Xcode generator, real device SDK, iOS 15 target)
+        working-directory: platforms/ios
+        run: >
+          cmake -G Xcode -B build/device
+          -DCMAKE_SYSTEM_NAME=iOS
+          -DCMAKE_OSX_ARCHITECTURES=arm64
+          -DARMSX2_REAL_DEVICE=ON
+          -DARMSX2_IOS_DEPLOYMENT_TARGET=15.0
+
+      - name: Build (iphoneos SDK, unsigned)
+        working-directory: platforms/ios
+        run: >
+          cmake --build build/device --config Release
+          -- -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+      - name: Package unsigned .ipa
+        working-directory: platforms/ios
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          IPA_NAME="ARMSX2-iOS-15-${SHORT_SHA}.ipa"
+
+          APP_PATH=$(find build/device -name "ARMSX2iOS.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: ARMSX2iOS.app not found in build output"
+            exit 1
+          fi
+
+          echo "Found app at: $APP_PATH"
+          echo "Packaging as: $IPA_NAME"
+
+          STAGING=$(mktemp -d)
+          mkdir -p "$STAGING/Payload"
+          cp -R "$APP_PATH" "$STAGING/Payload/"
+
+          cd "$STAGING"
+          zip -r "$GITHUB_WORKSPACE/$IPA_NAME" Payload -x "*.DS_Store"
+          cd "$GITHUB_WORKSPACE"
+
+          echo "IPA_NAME=$IPA_NAME" >> $GITHUB_ENV
+          ls -lh "$IPA_NAME"
+
+      - name: Upload .ipa artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.IPA_NAME }}
+          path: ${{ github.workspace }}/${{ env.IPA_NAME }}
+          if-no-files-found: error
