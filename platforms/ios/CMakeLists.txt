@@ -361,8 +361,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 			XCODE_ATTRIBUTE_SWIFT_VERSION "6.0"
 			# Debug compiles Swift per file; Release is whole-module, as on base. If a
 			# Release build runs out of frontend memory, per-file goes back for Release.
-			XCODE_ATTRIBUTE_SWIFT_COMPILATION_MODE "$<IF:$<CONFIG:Debug>,singlefile,wholemodule>"
-			XCODE_ATTRIBUTE_SWIFT_ENABLE_BATCH_MODE "$<IF:$<CONFIG:Debug>,NO,YES>"
+			XCODE_ATTRIBUTE_SWIFT_COMPILATION_MODE "singlefile"
+			XCODE_ATTRIBUTE_SWIFT_ENABLE_BATCH_MODE "NO"
 			XCODE_ATTRIBUTE_SWIFT_OPTIMIZATION_LEVEL "$<IF:$<CONFIG:Debug>,-Onone,-O>"
 			XCODE_ATTRIBUTE_COMPILER_INDEX_STORE_ENABLE "NO"
 			XCODE_ATTRIBUTE_CLANG_ENABLE_MODULES "YES"
