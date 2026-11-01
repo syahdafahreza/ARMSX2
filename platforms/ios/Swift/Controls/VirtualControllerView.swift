@@ -9,10 +9,10 @@ import UIKit
 let gameplaySurfaceTapNotification = Notification.Name("ARMSX2iOSGameplaySurfaceTap")
 
 struct VirtualControllerView: View {
-    @State private var settings = SettingsStore.shared
-    @State private var dynamicSettings = DynamicThumbstickSettings.shared
-    @State private var skinLibrary = VPadSkinLibraryStore.shared
-    @State private var layout = PadLayoutStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var dynamicSettings = DynamicThumbstickSettings.shared
+    @ObservedObject private var skinLibrary = VPadSkinLibraryStore.shared
+    @ObservedObject private var layout = PadLayoutStore.shared
     @State private var swipeInput = SwipeCameraInputDriver()
     @State private var gyroscopeInput = VirtualPadGyroscopeController()
     @State private var ownedTouchActionSession = VirtualPadTouchActionSession()

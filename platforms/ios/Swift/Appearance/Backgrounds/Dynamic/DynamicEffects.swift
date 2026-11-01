@@ -482,7 +482,7 @@ struct DynamicParticleOverlay: View {
 
   /// A single, inexpensive DVD-style logo which reflects at each screen edge.
   private struct ARMSX2BouncingLogoParticleView: View {
-    @State private var logoStore = ARMSX2LogoStore.shared
+    @ObservedObject private var logoStore = ARMSX2LogoStore.shared
     @Environment(\.uiFrameRateConfiguration) private var frameRates
     let settings: DynamicParticleSettings
     let theme: DynamicBackgroundTheme

@@ -33,7 +33,7 @@ private struct StoragePaths: Sendable {
     @MainActor
     static func current() -> StoragePaths {
         let fileManager = FileManager.default
-        let documentsURL = URL.documentsDirectory
+        let documentsURL = URL.documentsDirectoryCompat
         let systemCachesURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first
         return StoragePaths(
             emulatorCacheURL: documentsURL.appendingPathComponent("cache", isDirectory: true),
@@ -286,8 +286,8 @@ private enum StorageCleaner {
 }
 
 struct StorageSettingsView: View {
-    @State private var settings = SettingsStore.shared
-    @State private var externalLibrary = ExternalGameLibrary.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var externalLibrary = ExternalGameLibrary.shared
     @State private var report = StorageReport()
     @State private var isWorking = false
     @State private var pendingAction: StorageClearAction?

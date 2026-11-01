@@ -4,7 +4,6 @@
 import SwiftUI
 import UIKit
 import GameController
-import Observation
 
 private let runtimeMenuStateChangedNotification = Notification.Name("ARMSX2iOSRuntimeMenuStateChanged")
 private let retroAchievementsToastNotification = Notification.Name("ARMSX2RetroAchievementsNotification")
@@ -41,9 +40,8 @@ private struct RetroAchievementsToast: Equatable {
 /// the only view which observes this object, so holding Left/Right no longer invalidates Metal,
 /// virtual-pad, Quick Menu, and overlay layout on every repeated percentage step.
 @MainActor
-@Observable
-private final class PerGameLivePreviewToastState {
-    private(set) var status: PerGameLivePreviewStatus?
+private final class PerGameLivePreviewToastState: ObservableObject {
+    @Published private(set) var status: PerGameLivePreviewStatus?
 
     func present(_ next: PerGameLivePreviewStatus) {
         guard status?.value != next.value else { return }
@@ -257,9 +255,9 @@ func landscapePadInsets(_ geo: GeometryProxy, screen: CGSize) -> EdgeInsets {
 /// Gameplay presentation used after Emulation-Only Mode finishes startup cleanup.
 /// With every release switch enabled, this keeps only the existing Metal surface.
 struct EmulationOnlyGameView: View {
-    @State private var appState = AppState.shared
-    @State private var settings = SettingsStore.shared
-    @State private var dynamicSettings = DynamicThumbstickSettings.shared
+    @ObservedObject private var appState = AppState.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var dynamicSettings = DynamicThumbstickSettings.shared
     @State private var touchActionSession = VirtualPadTouchActionSession()
 
     @ViewBuilder
@@ -397,11 +395,11 @@ struct GameScreenView: View {
 
     let showsGameplayControllerShortcutHelp: Bool
 
-    @State private var appState = AppState.shared
-    @State private var settings = SettingsStore.shared
-    @State private var dynamicSettings = DynamicThumbstickSettings.shared
-    @State private var layoutPresets = PadLayoutPresetStore.shared
-    @State private var skinLibrary = VPadSkinLibraryStore.shared
+    @ObservedObject private var appState = AppState.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var dynamicSettings = DynamicThumbstickSettings.shared
+    @ObservedObject private var layoutPresets = PadLayoutPresetStore.shared
+    @ObservedObject private var skinLibrary = VPadSkinLibraryStore.shared
     @State private var touchActionSession = VirtualPadTouchActionSession()
     @Environment(\.menuControllerInputRouter) private var controllerInput
     @State private var userVirtualPadVisible = true
@@ -1556,7 +1554,7 @@ struct GameScreenView: View {
         menuRevealTask?.cancel()
         withAnimation(.easeOut(duration: 0.18)) { menuButtonRevealed = true }
         menuRevealTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(4))
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
             guard !Task.isCancelled else { return }
             withAnimation(.easeIn(duration: 0.18)) { menuButtonRevealed = false }
         }
@@ -1604,7 +1602,7 @@ struct GameScreenView: View {
             if reduceMotion {
                 await Task.yield()
             } else {
-                try? await Task.sleep(for: .milliseconds(220))
+                try? await Task.sleep(nanoseconds: 220_000_000)
             }
             guard !Task.isCancelled, overlayRoute == route else { return }
             releaseInactiveQuickMenuPresentationResources(for: route)
@@ -1679,10 +1677,10 @@ struct GameScreenView: View {
         // Otherwise the same edge that activates Resume reaches the resumed VM.
         resumeGameplayTask = Task { @MainActor in
             while controllerInput?.pressedFaceButton == .cross {
-                try? await Task.sleep(for: .milliseconds(8))
+                try? await Task.sleep(nanoseconds: 8_000_000)
                 guard !Task.isCancelled else { return }
             }
-            try? await Task.sleep(for: .milliseconds(16))
+            try? await Task.sleep(nanoseconds: 16_000_000)
             guard !Task.isCancelled else { return }
             resumeGameplayTask = nil
             overlayRoute = .hidden
@@ -2359,7 +2357,7 @@ struct GameScreenView: View {
         .task(id: appState.emulationSessionID) {
             SaveStateAutoSave.shared.restart()
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(5))
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
                 // Only play counts: not the pause card, the live preview, or time in the library.
                 if overlayRoute == .hidden, !runtimeOverlayPauseActive, appState.currentScreen == .playing,
                    UIApplication.shared.applicationState == .active, ARMSX2Bridge.isVMRunning() {

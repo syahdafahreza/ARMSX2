@@ -2618,8 +2618,8 @@ struct ControllerFocusBox: View {
     var animatesArtwork = true
     var shape: ControllerFocusBoxShape = .pill
 
-    @State private var settings = SettingsStore.shared
-    @State private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -2663,8 +2663,8 @@ struct ControllerFocusBox: View {
 struct ControllerBottomNavigationFocusGlow: View {
     var cornerRadius: CGFloat = 18
 
-    @State private var settings = SettingsStore.shared
-    @State private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
 
     var body: some View {
         GeometryReader { proxy in
@@ -3816,9 +3816,9 @@ struct ControllerNavigationAnimatedOrbField: View {
     var neonShape: ControllerFocusBoxShape = .pill
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var settings = SettingsStore.shared
-    @State private var frameRates = UIFrameRateSettings.shared
-    @State private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var frameRates = UIFrameRateSettings.shared
+    @ObservedObject private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
     @State private var lastTargetID: String?
     @State private var lastResolvedTargetFrame: CGRect?
     @State private var frameTransitions: [ControllerNavigationOrbFrameTransition] = []
@@ -4157,7 +4157,7 @@ struct ControllerNavigationAnimatedOrbField: View {
         transitionCompletionTask?.cancel()
         transitionCompletionTask = Task { @MainActor in
             try? await Task.sleep(
-                for: .milliseconds(Int((duration * 1_000).rounded()))
+                nanoseconds: UInt64(max(0, duration) * 1_000_000_000)
             )
             guard !Task.isCancelled else { return }
             completeTransition(at: Date.timeIntervalSinceReferenceDate)
@@ -4484,7 +4484,7 @@ struct ControllerNavigationAnimatedOrbField: View {
         commandPaletteTask?.cancel()
         commandPalette = palette
         commandPaletteTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(holdMilliseconds))
+            try? await Task.sleep(nanoseconds: UInt64(max(0, holdMilliseconds)) * 1_000_000)
             guard !Task.isCancelled else { return }
             commandPalette = nil
             commandPaletteTask = nil
@@ -4548,7 +4548,7 @@ private struct ControllerNavigationMovingOrbOverlay: View {
     let target: ControllerNavigationResolvedOrbTarget?
     let controllerInput: MenuControllerInputRouter?
 
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var displayedTarget: ControllerNavigationResolvedOrbTarget?
     @State private var isVisible = false
     @State private var removalTask: Task<Void, Never>?
@@ -4610,12 +4610,12 @@ private struct ControllerNavigationMovingOrbOverlay: View {
                 // the newly revealed card publishes its anchor. Cover the
                 // complete controller scroll duration so the field never
                 // blinks out between two valid library selections.
-                try? await Task.sleep(for: .milliseconds(380))
+                try? await Task.sleep(nanoseconds: 380_000_000)
                 guard !Task.isCancelled else { return }
                 withAnimation(.easeOut(duration: 0.12)) {
                     isVisible = false
                 }
-                try? await Task.sleep(for: .milliseconds(130))
+                try? await Task.sleep(nanoseconds: 130_000_000)
                 guard !Task.isCancelled else { return }
                 displayedTarget = nil
                 removalTask = nil

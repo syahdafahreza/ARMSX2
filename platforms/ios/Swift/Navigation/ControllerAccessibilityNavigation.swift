@@ -1,7 +1,6 @@
 // ControllerAccessibilityNavigation.swift — native-first controller focus
 // SPDX-License-Identifier: GPL-3.0+
 
-import Observation
 import QuartzCore
 import SwiftUI
 import UIKit
@@ -175,9 +174,8 @@ extension EnvironmentValues {
 }
 
 @MainActor
-@Observable
-fileprivate final class ControllerAccessibilityTargetFocusState {
-    var isFocused = false
+fileprivate final class ControllerAccessibilityTargetFocusState: ObservableObject {
+    @Published var isFocused = false
 }
 
 /// A List/Form marker remains beside its real scroll surface even when Liquid
@@ -197,8 +195,7 @@ private final class ControllerAccessibilityDisplayLinkDriver: NSObject {
 }
 
 @MainActor
-@Observable
-final class ControllerAccessibilityNavigationSession {
+final class ControllerAccessibilityNavigationSession: ObservableObject {
     private final class WeakView {
         weak var value: UIView?
         init(_ value: UIView?) { self.value = value }
@@ -327,14 +324,14 @@ final class ControllerAccessibilityNavigationSession {
     @ObservationIgnored private weak var publishedScrollWindow: UIWindow?
     @ObservationIgnored private var publishedScrollFrame: CGRect?
     @ObservationIgnored private var presentedFocusKey: String?
-    private(set) var focusPresentationIsHiddenForScrolling = false
+    @Published private(set) var focusPresentationIsHiddenForScrolling = false
     @ObservationIgnored private var interactionSequence: UInt64 = 0
 
-    private var focusPresentation = FocusPresentation.empty
-    private(set) var latestOrbInteraction: ControllerNavigationOrbInteraction?
-    private(set) var hasNavigableElements = false
-    private(set) var scopeRevision: UInt64 = 0
-    private(set) var isScrollPresentationActive = false
+    @Published private var focusPresentation = FocusPresentation.empty
+    @Published private(set) var latestOrbInteraction: ControllerNavigationOrbInteraction?
+    @Published private(set) var hasNavigableElements = false
+    @Published private(set) var scopeRevision: UInt64 = 0
+    @Published private(set) var isScrollPresentationActive = false
 
     var registrationIdentifier: UUID? { registrationID }
 
@@ -847,7 +844,7 @@ final class ControllerAccessibilityNavigationSession {
             // Wait one display frame for the binding mutation to update the
             // target probe, then report the resulting value rather than its
             // pre-adjustment value.
-            try? await Task.sleep(for: .milliseconds(16))
+            try? await Task.sleep(nanoseconds: 16_000_000)
             guard let self, !Task.isCancelled else { return }
             let updatedTarget = self.targets[key]
                 ?? self.targets.values.first {
@@ -1262,7 +1259,7 @@ final class ControllerAccessibilityNavigationSession {
         pendingFocusExpiryTask = Task { @MainActor [weak self] in
             // Lazy Forms may need to scroll before the remembered row remounts.
             // Fall back only if the semantic target genuinely never returns.
-            try? await Task.sleep(for: .milliseconds(1_500))
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
             guard let self, !Task.isCancelled,
                   self.pendingFocusKey == key else { return }
             self.pendingFocusKey = nil
@@ -1875,7 +1872,7 @@ final class ControllerAccessibilityNavigationSession {
         pendingFocusExpiryTask = Task { @MainActor [weak self] in
             // A long lazy Form may need more than one layout turn to mount a
             // remembered offscreen row after ScrollViewReader seeks to it.
-            try? await Task.sleep(for: .milliseconds(1_500))
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
             guard let self, !Task.isCancelled,
                   self.pendingFocusKey == key else { return }
             self.pendingFocusKey = nil
@@ -3141,7 +3138,7 @@ private struct ControllerAccessibilityFocusOverlay: View {
     let controllerInput: MenuControllerInputRouter?
     let style: ControllerNavigationOrbStyle
     let focusNeonExclusionLabels: [String]
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         if controllerInput?.navigationZone != .tabBar,
@@ -3194,7 +3191,7 @@ private struct ControllerAccessibilityWindowFocusOverlay: View {
     let controllerInput: MenuControllerInputRouter?
     let style: ControllerNavigationOrbStyle
     let includedLabels: [String]
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -3420,7 +3417,7 @@ private struct ControllerAccessibilityNavigationModifier: ViewModifier {
     let declaredTargetOrder: [String]?
 
     @State private var registrationID = UUID()
-    @State private var session = ControllerAccessibilityNavigationSession()
+    @StateObject private var session = ControllerAccessibilityNavigationSession()
 
     func body(content: Content) -> some View {
         ScrollViewReader { proxy in

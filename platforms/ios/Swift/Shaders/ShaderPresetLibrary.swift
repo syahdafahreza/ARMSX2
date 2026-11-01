@@ -89,7 +89,7 @@ enum ShaderPresetLibrary {
     }
 
     static var userRoot: URL? {
-        URL.documentsDirectory.appendingPathComponent(rootFolderName, isDirectory: true)
+        URL.documentsDirectoryCompat.appendingPathComponent(rootFolderName, isDirectory: true)
     }
 
     // Inside the scanned root, so saved presets list like any other.

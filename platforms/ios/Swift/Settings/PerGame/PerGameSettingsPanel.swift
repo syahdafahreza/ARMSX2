@@ -38,9 +38,9 @@ struct PerGameSettingsPanel: View {
     @Environment(\.uiAccentColour) private var accentColour
     @Environment(\.uiContextMenuColour) private var panelTextColour
     @Environment(\.uiContextMenuSecondaryColour) private var panelSecondaryTextColour
-    @State private var settings = SettingsStore.shared
-    @State private var layoutPresets = PadLayoutPresetStore.shared
-    @State private var skinLibrary = VPadSkinLibraryStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var layoutPresets = PadLayoutPresetStore.shared
+    @ObservedObject private var skinLibrary = VPadSkinLibraryStore.shared
     @State private var textureControllerTargets: [String] = []
 
     private enum PerGameSettingsCategory: String, CaseIterable, Identifiable, Hashable {
@@ -2191,7 +2191,7 @@ struct PerGameSettingsPanel: View {
                     + beforeDuration
                 while Date.timeIntervalSinceReferenceDate < beforeDeadline,
                       livePreviewChangeSequence == initialSequence {
-                    try await Task.sleep(for: .milliseconds(16))
+                    try await Task.sleep(nanoseconds: 16_000_000)
                     try Task.checkCancellation()
                 }
             }
@@ -2220,7 +2220,7 @@ struct PerGameSettingsPanel: View {
                 // preview, but immediately apply a newly adjusted Left/Right
                 // value without remounting the editor between changes.
                 while livePreviewChangeSequence == sequenceBeingApplied {
-                    try await Task.sleep(for: .milliseconds(16))
+                    try await Task.sleep(nanoseconds: 16_000_000)
                     try Task.checkCancellation()
                 }
             }
@@ -2649,7 +2649,7 @@ struct PerGameSettingsPanel: View {
             saveFeedbackVisible = true
         }
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.4))
+            try? await Task.sleep(nanoseconds: 1_400_000_000)
             withAnimation(.easeOut(duration: 0.24)) {
                 saveFeedbackVisible = false
             }

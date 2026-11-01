@@ -15,10 +15,10 @@ struct ThemeGalleryView: View {
 
     let controllerInput: MenuControllerInputRouter?
     @Environment(\.dismiss) private var dismiss
-    @State private var settings = SettingsStore.shared
-    @State private var gallery = ThemeGalleryStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var gallery = ThemeGalleryStore.shared
     @State private var page: Page = .themes
-    @State private var preferences = SettingsStore.shared.dynamicAppearancePreferences
+    @ObservedObject private var preferences = SettingsStore.shared.dynamicAppearancePreferences
     @State private var paletteTarget: ThemePaletteTarget = .shared
     @State private var original: AppearanceThemeSnapshot?
     @State private var originalSelection: AppearanceThemeSelection?
@@ -426,7 +426,7 @@ struct ThemeGalleryView: View {
             gallery.isPreviewing = true
         }
         previewTask = Task { @MainActor in
-            do { try await Task.sleep(for: .seconds(2)) } catch { return }
+            do { try await Task.sleep(nanoseconds: 2_000_000_000) } catch { return }
             withAnimation(.easeOut(duration: 0.2)) {
                 isPreviewing = false
                 gallery.isPreviewing = false

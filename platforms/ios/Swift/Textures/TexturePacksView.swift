@@ -10,7 +10,7 @@ struct TexturePacksView<Options: View>: View {
     // The per-game panel declares its whole controller order, so it reads this page's part from here.
     @Binding private var controllerTargets: [String]
     @Environment(\.menuControllerInputRouter) private var controllerInput
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var packs: [TexturePack]?
     @State private var titles: [String: String] = [:]
     @State private var showCatalog = false
@@ -215,7 +215,7 @@ struct TexturePacksView<Options: View>: View {
 }
 
 struct TextureReplacementSettings: View {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         Section(settings.localized("Texture Replacement")) {
@@ -331,6 +331,6 @@ struct TextureReplacementSettings: View {
 
 extension TexturePackLibrary {
     static var root: URL {
-        URL.documentsDirectory.appendingPathComponent("textures", isDirectory: true)
+        URL.documentsDirectoryCompat.appendingPathComponent("textures", isDirectory: true)
     }
 }

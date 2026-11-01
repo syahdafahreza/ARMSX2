@@ -1,7 +1,6 @@
 // ThemeGalleryStore.swift — Persistent, versioned appearance snapshots.
 // SPDX-License-Identifier: GPL-3.0+
 import SwiftUI
-import Observation
 import Foundation
 
 /// Game Library View Options are stored outside SettingsStore so the large
@@ -348,15 +347,15 @@ enum AppearanceThemeSelection: Hashable, Identifiable {
     }
 }
 
-@MainActor @Observable
-final class ThemeGalleryStore {
+@MainActor
+final class ThemeGalleryStore: ObservableObject {
     static let shared = ThemeGalleryStore()
-    private(set) var themes: [SavedAppearanceTheme]
-    private(set) var customDraft: AppearanceThemeSnapshot?
-    private(set) var activeSavedThemeID: UUID?
+    @Published private(set) var themes: [SavedAppearanceTheme]
+    @Published private(set) var customDraft: AppearanceThemeSnapshot?
+    @Published private(set) var activeSavedThemeID: UUID?
     // Hide the presenting menu without destroying its navigation
     // stack, so previews reveal the one existing background renderer.
-    var isPreviewing = false
+    @Published var isPreviewing = false
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private var customDraftPersistenceTask:
         Task<Void, Never>?
@@ -545,7 +544,7 @@ final class ThemeGalleryStore {
             // dismantling the large Appearance Form before JSON persistence
             // gets main-actor time. This removes the visible multi-second
             // focus stall when returning to Settings.
-            try? await Task.sleep(for: .milliseconds(250))
+            try? await Task.sleep(nanoseconds: 250_000_000)
             guard let self, !Task.isCancelled,
                   let data = try? JSONEncoder().encode(snapshot) else { return }
             self.defaults.set(data, forKey: Self.draftKey)

@@ -10,8 +10,7 @@ import Foundation
 import SwiftUI
 
 @MainActor
-@Observable
-final class PatchStore {
+final class PatchStore: ObservableObject {
     static let shared = PatchStore()
 
     static let cheatsSection = "Cheats"
@@ -60,16 +59,16 @@ final class PatchStore {
     private let fileManager = FileManager.default
 
     // Current game (manager UI context)
-    private(set) var isoName: String = ""
-    private(set) var launchContext: CheatsPatchesLaunchContext = .library
-    private(set) var identityState: PatchIdentityState = .libraryAwaitingFirstLaunch
-    private(set) var hasGameIdentity: Bool = false
-    private(set) var canManageInstalledFiles: Bool = false
-    private(set) var installed: [PatchEntry] = []
-    private(set) var lastMessage: String?
-    private(set) var lastMessageKind: PatchFeedbackKind = .information
-    private(set) var showMessage = false
-    private(set) var isDownloading = false
+    @Published private(set) var isoName: String = ""
+    @Published private(set) var launchContext: CheatsPatchesLaunchContext = .library
+    @Published private(set) var identityState: PatchIdentityState = .libraryAwaitingFirstLaunch
+    @Published private(set) var hasGameIdentity: Bool = false
+    @Published private(set) var canManageInstalledFiles: Bool = false
+    @Published private(set) var installed: [PatchEntry] = []
+    @Published private(set) var lastMessage: String?
+    @Published private(set) var lastMessageKind: PatchFeedbackKind = .information
+    @Published private(set) var showMessage = false
+    @Published private(set) var isDownloading = false
 
     private var currentSerial = ""
     private var currentCRC = ""

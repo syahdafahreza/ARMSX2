@@ -223,8 +223,7 @@ extension NumberSetting {
 }
 
 @MainActor
-@Observable
-final class SettingsStore {
+final class SettingsStore: ObservableObject {
     static let shared = SettingsStore()
     static let minTargetFPS: Float = 15.0
     static let maxTargetFPS: Float = 120.0

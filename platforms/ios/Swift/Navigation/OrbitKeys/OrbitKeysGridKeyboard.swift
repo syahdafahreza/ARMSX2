@@ -283,7 +283,7 @@ private struct OrbitKeysCellView: View {
             }
 
             Task { @MainActor in
-              try? await Task.sleep(for: .milliseconds(160))
+              try? await Task.sleep(nanoseconds: 160_000_000)
               suppressKeyTap = false
             }
           }
@@ -477,13 +477,13 @@ private struct OrbitKeysSelectionDot: View {
     pulseTask?.cancel()
     isExpanded = false
     pulseTask = Task { @MainActor in
-      try? await Task.sleep(for: .milliseconds(16))
+      try? await Task.sleep(nanoseconds: 16_000_000)
       guard !Task.isCancelled else { return }
       withAnimation(.spring(duration: 0.16, bounce: 0.28)) {
         isExpanded = true
       }
 
-      try? await Task.sleep(for: .milliseconds(150))
+      try? await Task.sleep(nanoseconds: 150_000_000)
       guard !Task.isCancelled else { return }
       withAnimation(.spring(duration: 0.22, bounce: 0.2)) {
         isExpanded = false
@@ -647,7 +647,7 @@ struct OrbitKeysOrbitalOrbField: View {
       guard lastSettledPosition != selectedPosition else { return }
 
       do {
-        try await Task.sleep(for: .milliseconds(420))
+        try await Task.sleep(nanoseconds: 420_000_000)
       } catch {
         return
       }

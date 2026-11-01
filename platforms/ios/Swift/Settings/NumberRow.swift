@@ -998,7 +998,7 @@ struct ConfirmedSettingsResetButton: View {
             controllerInput: controllerInput
         )
         completionTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(2.4))
+            try? await Task.sleep(nanoseconds: 2_400_000_000)
             guard !Task.isCancelled else { return }
             withAnimation(.easeIn(duration: 0.18)) {
                 showsCompletion = false

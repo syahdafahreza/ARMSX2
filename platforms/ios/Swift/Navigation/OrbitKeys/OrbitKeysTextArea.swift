@@ -412,6 +412,7 @@ struct OrbitKeysThinCaretTextView: UIViewRepresentable {
     }
   }
 
+  @available(iOS 16.0, *)
   func sizeThatFits(
     _ proposal: ProposedViewSize,
     uiView textView: OrbitKeysCaretTextView,

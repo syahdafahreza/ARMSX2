@@ -52,7 +52,7 @@ final class TransientBannerController<Value: Equatable>: ObservableObject {
             content = value
         }
         dismissTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(duration))
+            try? await Task.sleep(nanoseconds: UInt64(max(0, duration) * 1_000_000_000))
             guard !Task.isCancelled else { return }
             guard self.generation == currentGeneration else { return }
             withAnimation(.easeIn(duration: 0.18)) {
@@ -60,7 +60,7 @@ final class TransientBannerController<Value: Equatable>: ObservableObject {
             }
             // Small gap so the outgoing banner fully fades before the next appears.
             if !self.pending.isEmpty {
-                try? await Task.sleep(for: .milliseconds(160))
+                try? await Task.sleep(nanoseconds: 160_000_000)
                 guard !Task.isCancelled else { return }
                 let next = self.pending.removeFirst()
                 let nextDuration = self.pendingDuration

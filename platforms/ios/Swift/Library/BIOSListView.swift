@@ -26,13 +26,12 @@ struct BIOSLibraryEntry: Identifiable, Equatable, Sendable {
 }
 
 @MainActor
-@Observable
-final class BIOSLibraryState {
+final class BIOSLibraryState: ObservableObject {
     static let shared = BIOSLibraryState()
 
-    private(set) var entries: [BIOSLibraryEntry] = []
-    private(set) var defaultBIOS = ""
-    private(set) var hasLoaded = false
+    @Published private(set) var entries: [BIOSLibraryEntry] = []
+    @Published private(set) var defaultBIOS = ""
+    @Published private(set) var hasLoaded = false
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var needsRefresh = true
     @ObservationIgnored private var refreshCompletions:
@@ -175,9 +174,9 @@ struct BIOSListView: View {
         self.onControllerBoundary = onControllerBoundary
     }
 
-    @State private var library = BIOSLibraryState.shared
-    @State private var settings = SettingsStore.shared
-    @State private var fileImporter = FileImportHandler.shared
+    @ObservedObject private var library = BIOSLibraryState.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var fileImporter = FileImportHandler.shared
     @State private var showBIOSImporter = false
     @State private var showBIOSCompatibilityImporter = false
     @State private var showBIOSReplacementAlert = false
@@ -186,7 +185,7 @@ struct BIOSListView: View {
     @State private var pendingBIOSImportURLs: [URL] = []
     @State private var existingBIOSImportFileNames: [String] = []
     @State private var BIOSRefreshTask: Task<Void, Never>?
-    @State private var appState = AppState.shared
+    @ObservedObject private var appState = AppState.shared
     @State private var focusedToolbarTargetID: String?
     @Environment(\.menuTabIsActive) private var menuTabIsActive
     @Environment(\.verticalSizeClass) private var verticalSizeClass
@@ -482,12 +481,12 @@ struct BIOSListView: View {
         }
         .onAppear {
             if menuTabIsActive {
-                scheduleBIOSRefresh(after: .milliseconds(0))
+                scheduleBIOSRefresh(after: 0)
             }
         }
         .onChange(of: menuTabIsActive) { _, isActive in
             if isActive {
-                scheduleBIOSRefresh(after: .milliseconds(0))
+                scheduleBIOSRefresh(after: 0)
             }
         }
         .onChange(of: activePrompt) { previous, prompt in
@@ -499,7 +498,7 @@ struct BIOSListView: View {
         .onReceive(NotificationCenter.default.publisher(for: InitialContentBootstrap.didChangeNotification)) { _ in
             library.markNeedsRefresh()
             if menuTabIsActive {
-                scheduleBIOSRefresh(after: .milliseconds(120))
+                scheduleBIOSRefresh(after: 120_000_000)
             }
         }
         .onDisappear {
@@ -882,10 +881,12 @@ struct BIOSListView: View {
 
     /// Coalesces bootstrap notifications and avoids opening every BIOS file
     /// while the retained BIOS page is hidden behind another tab.
-    private func scheduleBIOSRefresh(after delay: Duration) {
+    private func scheduleBIOSRefresh(after delayNanos: UInt64 = 0) {
         BIOSRefreshTask?.cancel()
         BIOSRefreshTask = Task { @MainActor in
-            try? await Task.sleep(for: delay)
+            if delayNanos > 0 {
+                try? await Task.sleep(nanoseconds: delayNanos)
+            }
             guard !Task.isCancelled, menuTabIsActive else {
                 library.markNeedsRefresh()
                 return

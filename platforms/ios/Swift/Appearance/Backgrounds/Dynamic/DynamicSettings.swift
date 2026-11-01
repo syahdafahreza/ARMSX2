@@ -999,7 +999,7 @@ struct DynamicParticleSettingsControls: View {
   let dynamicBackground: DynamicBackgroundStyle
   let resetAllSettingsAndPalettes: () -> Void
 
-  @State private var logoStore = ARMSX2LogoStore.shared
+  @ObservedObject private var logoStore = ARMSX2LogoStore.shared
 
   @AppStorage("ARMSX2iOSDynamicAddParticlesExpanded")
   private var showsAddParticlesSettings = true

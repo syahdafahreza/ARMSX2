@@ -136,12 +136,12 @@ final class PersistentMenuBackgroundHost: ObservableObject {
         // warm-up interval.
         inactiveSnapshotOpacity = 1
         snapshotReleaseTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(180))
+            try? await Task.sleep(nanoseconds: 180_000_000)
             guard !Task.isCancelled else { return }
             withAnimation(.easeInOut(duration: 0.36)) {
                 self?.inactiveSnapshotOpacity = 0
             }
-            try? await Task.sleep(for: .milliseconds(360))
+            try? await Task.sleep(nanoseconds: 360_000_000)
             guard !Task.isCancelled else { return }
             self?.inactiveSnapshot = nil
             self?.snapshotReleaseTask = nil

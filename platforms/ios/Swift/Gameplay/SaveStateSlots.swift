@@ -225,18 +225,17 @@ enum SaveStateFormat {
 
     /// "4 h 12 min played".
     static func played(_ seconds: Double, settings: SettingsStore) -> String {
-        let duration = Duration.seconds(Int64(seconds.rounded()))
-        let text = duration.formatted(
-            .units(allowed: [.hours, .minutes], width: .abbreviated).locale(locale(settings))
-        )
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = .abbreviated
+        let text = formatter.string(from: seconds) ?? "\(Int(seconds / 60)) min"
         return String(format: settings.localized("%@ played"), text)
     }
 }
 
 /// The one action that can still be undone, and its 8 second window.
 @MainActor
-@Observable
-final class SaveStateUndoModel {
+final class SaveStateUndoModel: ObservableObject {
     enum Action {
         case load(path: String)
         case delete(slot: Int, fileName: String)
@@ -255,12 +254,12 @@ final class SaveStateUndoModel {
     static let shared = SaveStateUndoModel()
 
     /// The window of the toast on screen, from Settings, so the bar drains over the same span.
-    private(set) var duration: Double = 5
+    @Published private(set) var duration: Double = 5
 
-    private(set) var item: Item?
-    private(set) var remaining: Double = 0
+    @Published private(set) var item: Item?
+    @Published private(set) var remaining: Double = 0
     /// Set while the toast holds VoiceOver focus.
-    var focusHeld = false
+    @Published var focusHeld = false
     private var timer: Task<Void, Never>?
 
     var slot: Int? {
@@ -278,7 +277,7 @@ final class SaveStateUndoModel {
         if let announcement { AccessibilityNotification.Announcement(announcement).post() }
         timer = Task { [weak self] in
             while let self, !Task.isCancelled, self.item?.id == next.id {
-                try? await Task.sleep(for: .milliseconds(100))
+                try? await Task.sleep(nanoseconds: 100_000_000)
                 // The window waits while the toast has VoiceOver focus or the app is away.
                 let paused = self.focusHeld || UIApplication.shared.applicationState != .active
                 if !paused { self.remaining -= 0.1 }

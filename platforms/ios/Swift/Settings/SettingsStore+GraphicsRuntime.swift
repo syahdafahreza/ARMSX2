@@ -26,6 +26,7 @@ extension SettingsStore {
         guard !(setting.suppressible && suppressINIWrites) else { return }
         setting.codec.write(setting.section, setting.key, value)
         if setting.appliesGraphics { requestGraphicsApplyGuarded() }
+        objectWillChange.send()
     }
 
     /// Nothing should reach this while the INI is loading, but it checks anyway:

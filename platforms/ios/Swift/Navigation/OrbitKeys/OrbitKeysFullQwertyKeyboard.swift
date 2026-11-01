@@ -748,13 +748,13 @@ private struct OrbitKeysFullQwertyKeyButton: View {
     activationTask?.cancel()
     activationScale = false
     activationTask = Task { @MainActor in
-      try? await Task.sleep(for: .milliseconds(8))
+      try? await Task.sleep(nanoseconds: 8_000_000)
       guard !Task.isCancelled else { return }
       withAnimation(.easeOut(duration: 0.08)) {
         activationScale = true
       }
 
-      try? await Task.sleep(for: .milliseconds(95))
+      try? await Task.sleep(nanoseconds: 95_000_000)
       guard !Task.isCancelled else { return }
       withAnimation(.easeOut(duration: 0.14)) {
         activationScale = false

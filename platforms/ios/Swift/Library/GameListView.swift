@@ -5,7 +5,6 @@ import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
 import UIKit
-import Observation
 
 /// Region-string to flag emoji mapping, shared by library cards and the game
 /// info detail view. Returns an empty string for unknown regions so callers can
@@ -224,6 +223,7 @@ private struct GameplayLaunchCardRegistrationView: UIViewRepresentable {
         context.coordinator.registry.register(uiView, for: gameID)
     }
 
+    @available(iOS 16.0, *)
     func sizeThatFits(
         _ proposal: ProposedViewSize,
         uiView: UIView,
@@ -444,6 +444,7 @@ private struct GameLibraryCardLongPressObserver: UIViewRepresentable {
         context.coordinator.installIfNeeded(from: uiView)
     }
 
+    @available(iOS 16.0, *)
     func sizeThatFits(
         _ proposal: ProposedViewSize,
         uiView: MarkerView,
@@ -898,9 +899,7 @@ private struct GameCoverThemeGlowModifier: ViewModifier {
                     withAnimation(.easeInOut(duration: duration)) {
                         phase = .random()
                     }
-                    try? await Task.sleep(
-                        for: .milliseconds(Int(duration * 1_000))
-                    )
+                    try? await Task.sleep(nanoseconds: UInt64(max(0, duration) * 1_000_000_000))
                 }
             }
     }
@@ -918,15 +917,17 @@ private final class GameLibraryActivityState {
     private var cachedRunningIdentifiers: Set<String> = []
 
     func scheduleReload(
-        after delay: Duration,
+        after delayNanos: UInt64,
         operation: @escaping @MainActor () -> Void
     ) {
         scheduledReloadTask?.cancel()
         scheduledReloadTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: delay)
+            if delayNanos > 0 {
+                try? await Task.sleep(nanoseconds: delayNanos)
+            }
             guard !Task.isCancelled else { return }
             while self?.isScrolling == true {
-                try? await Task.sleep(for: .milliseconds(50))
+                try? await Task.sleep(nanoseconds: 50_000_000)
                 guard !Task.isCancelled else { return }
             }
             operation()
@@ -1063,9 +1064,8 @@ enum GameLibraryRuntimeResources {
 }
 
 @MainActor
-@Observable
-private final class GameLibraryControllerCardFocusState {
-    var isFocused: Bool
+private final class GameLibraryControllerCardFocusState: ObservableObject {
+    @Published var isFocused: Bool
 
     init(isFocused: Bool) {
         self.isFocused = isFocused
@@ -1098,9 +1098,8 @@ private enum GameLibraryNowRunningControllerAction: Int, CaseIterable {
 }
 
 @MainActor
-@Observable
-private final class GameLibraryNowRunningControllerFocusState {
-    var selectedAction: GameLibraryNowRunningControllerAction?
+private final class GameLibraryNowRunningControllerFocusState: ObservableObject {
+    @Published var selectedAction: GameLibraryNowRunningControllerAction?
 }
 
 private struct GameLibraryNowRunningControllerFocusModifier: ViewModifier {
@@ -1161,8 +1160,7 @@ private struct GameLibraryNowRunningControllerFocusModifier: ViewModifier {
 }
 
 @MainActor
-@Observable
-private final class GameLibraryControllerFocusState {
+private final class GameLibraryControllerFocusState: ObservableObject {
     @ObservationIgnored private var storedSelectedGameID: String?
     @ObservationIgnored private var storedIsActive = false
     @ObservationIgnored private var isLibraryZone = true
@@ -1172,7 +1170,7 @@ private final class GameLibraryControllerFocusState {
     @ObservationIgnored private var scrollSequence: UInt64 = 0
     @ObservationIgnored private var suppressNextSelectionScroll = false
 
-    var selectionScrollRequest: GameLibrarySelectionScrollRequest?
+    @Published var selectionScrollRequest: GameLibrarySelectionScrollRequest?
 
     var selectedGameID: String? {
         get { storedSelectedGameID }
@@ -1183,6 +1181,7 @@ private final class GameLibraryControllerFocusState {
             refreshCard(previous)
             refreshCard(newValue)
             publishSelectionScrollIfNeeded()
+            objectWillChange.send()
         }
     }
 
@@ -1192,6 +1191,7 @@ private final class GameLibraryControllerFocusState {
             guard storedIsActive != newValue else { return }
             storedIsActive = newValue
             refreshCard(presentedGameID)
+            objectWillChange.send()
         }
     }
 
@@ -1333,9 +1333,8 @@ private struct GameLibraryControllerCommandListener: View {
 }
 
 @MainActor
-@Observable
-private final class GameLibraryControllerScrollAvailability {
-    var isEnabled = false
+private final class GameLibraryControllerScrollAvailability: ObservableObject {
+    @Published var isEnabled = false
 }
 
 private struct GameLibraryControllerRightStickTarget: View {
@@ -1359,9 +1358,8 @@ private struct GameLibraryControllerRightStickTarget: View {
 }
 
 @MainActor
-@Observable
-private final class GameLibraryScrollRestoreState {
-    var topRequestSequence: UInt64 = 0
+private final class GameLibraryScrollRestoreState: ObservableObject {
+    @Published var topRequestSequence: UInt64 = 0
     @ObservationIgnored private var consumedTopRequestSequence: UInt64 = 0
 
     func requestTopRestore() {
@@ -2069,9 +2067,8 @@ private enum GameLibraryControllerToolbarAction: Int, CaseIterable {
 }
 
 @MainActor
-@Observable
-private final class GameLibraryControllerToolbarFocusState {
-    var selectedAction: GameLibraryControllerToolbarAction = .importGames
+private final class GameLibraryControllerToolbarFocusState: ObservableObject {
+    @Published var selectedAction: GameLibraryControllerToolbarAction = .importGames
 }
 
 private enum GameLibraryControllerAlertKind: String, Equatable {
@@ -2132,10 +2129,9 @@ private struct DeferredControllerContextMenuSelection {
 }
 
 @MainActor
-@Observable
-private final class GameLibraryControllerContextMenuState {
-    var gameID: String?
-    var section: GameLibraryControllerMenuSection = .root
+private final class GameLibraryControllerContextMenuState: ObservableObject {
+    @Published var gameID: String?
+    @Published var section: GameLibraryControllerMenuSection = .root
     var selectedAction: GameLibraryControllerMenuAction?
 }
 
@@ -2225,12 +2221,12 @@ struct GameListView: View {
     }
 
     @State private var games: [ISOEntry] = []
-    @State private var appState = AppState.shared
-	@State private var settings = SettingsStore.shared
-	@State private var logoStore = ARMSX2LogoStore.shared
-	@State private var fileImporter = FileImportHandler.shared
-	@State private var coverStore = CoverStore.shared
-	@State private var externalLibrary = ExternalGameLibrary.shared
+    @ObservedObject private var appState = AppState.shared
+	@ObservedObject private var settings = SettingsStore.shared
+	@ObservedObject private var logoStore = ARMSX2LogoStore.shared
+	@ObservedObject private var fileImporter = FileImportHandler.shared
+	@ObservedObject private var coverStore = CoverStore.shared
+	@ObservedObject private var externalLibrary = ExternalGameLibrary.shared
 	@State private var externalCoverAutoDownloadAttemptedIDs = Set<String>()
 	@State private var coverWorkTask: Task<Void, Never>?
 	@State private var showGameImporter = false
@@ -2291,10 +2287,10 @@ struct GameListView: View {
     @State private var nowRunningCardScale = 1.0
     @State private var nowRunningStatusOpacity = 1.0
     @State private var gameLibraryActivity = GameLibraryActivityState()
-    @State private var controllerFocusState = GameLibraryControllerFocusState()
-    @State private var controllerScrollAvailability =
+    @StateObject private var controllerFocusState = GameLibraryControllerFocusState()
+    @StateObject private var controllerScrollAvailability =
         GameLibraryControllerScrollAvailability()
-    @State private var libraryScrollRestoreState =
+    @StateObject private var libraryScrollRestoreState =
         GameLibraryScrollRestoreState()
     @State private var favoriteScrollRequest: GameLibraryFavoriteScrollRequest?
     @State private var favoriteScrollSequence: UInt64 = 0
@@ -2305,12 +2301,12 @@ struct GameListView: View {
     @State private var landscapeControllerAutofocusPending = false
     @State private var landscapeControllerAutofocusTask: Task<Void, Never>?
     @State private var runningGameControllerFocusPending = false
-    @State private var controllerContextMenuState =
+    @StateObject private var controllerContextMenuState =
         GameLibraryControllerContextMenuState()
     @State private var deferredControllerContextMenuSelection:
         DeferredControllerContextMenuSelection?
-    @State private var controllerToolbarFocusState = GameLibraryControllerToolbarFocusState()
-    @State private var controllerNowRunningFocusState =
+    @StateObject private var controllerToolbarFocusState = GameLibraryControllerToolbarFocusState()
+    @StateObject private var controllerNowRunningFocusState =
         GameLibraryNowRunningControllerFocusState()
     @State private var controllerAlertSelectedIndex = 0
     @State private var controllerLayoutMenuPresented = false
@@ -4002,7 +3998,7 @@ struct GameListView: View {
         }
         if GameLibrarySnapshot.shared.shouldRefreshLibrary() {
             scheduleLibraryReload(
-                after: .milliseconds(80),
+                after: 80_000_000,
                 autoDownloadExternalCovers: true
             )
         }
@@ -4014,7 +4010,7 @@ struct GameListView: View {
     private func handleExternalLibraryDidChange() {
         GameLibrarySnapshot.shared.markLibraryRefreshNeeded()
         scheduleLibraryReload(
-            after: .milliseconds(120),
+            after: 120_000_000,
             autoDownloadExternalCovers: true
         )
     }
@@ -4022,7 +4018,7 @@ struct GameListView: View {
     private func handleInitialContentDidChange() {
         GameLibrarySnapshot.shared.markLibraryRefreshNeeded()
         scheduleLibraryReload(
-            after: .milliseconds(120),
+            after: 120_000_000,
             autoDownloadExternalCovers: false
         )
     }
@@ -4035,7 +4031,7 @@ struct GameListView: View {
         GameLibrarySnapshot.shared.markLibraryRefreshNeeded()
         _ = focusRunningControllerGameIfAvailable()
         scheduleLibraryReload(
-            after: .milliseconds(80),
+            after: 80_000_000,
             autoDownloadExternalCovers: false
         )
     }
@@ -8811,10 +8807,10 @@ struct GameListView: View {
     /// covers are imported. Refresh once, after scrolling settles, so a disk
     /// scan cannot interrupt an active gesture or deceleration.
     private func scheduleLibraryReload(
-        after delay: Duration,
+        after delayNanos: UInt64,
         autoDownloadExternalCovers: Bool
     ) {
-        gameLibraryActivity.scheduleReload(after: delay) {
+        gameLibraryActivity.scheduleReload(after: delayNanos) {
             loadGames(
                 autoDownloadExternalCovers: autoDownloadExternalCovers
             )
@@ -9004,20 +9000,20 @@ struct GameListView: View {
         nowRunningRemovalResetTask = Task { @MainActor in
             // Let the status morph complete, fade its foreground away, then
             // collapse the complete composited glass surface to zero pixels.
-            try? await Task.sleep(for: .milliseconds(420))
+            try? await Task.sleep(nanoseconds: 420_000_000)
             guard !Task.isCancelled else { return }
 
             withAnimation(.easeInOut(duration: 0.3)) {
                 nowRunningStatusOpacity = 0
             }
-            try? await Task.sleep(for: .milliseconds(320))
+            try? await Task.sleep(nanoseconds: 320_000_000)
             guard !Task.isCancelled else { return }
 
             withAnimation(.easeInOut(duration: 0.65)) {
                 nowRunningCardOpacity = 0
                 nowRunningCardScale = 0
             }
-            try? await Task.sleep(for: .milliseconds(700))
+            try? await Task.sleep(nanoseconds: 700_000_000)
             guard !Task.isCancelled else { return }
 
             // Stop the VM as soon as the card's own departure completes. Keep
@@ -9027,14 +9023,14 @@ struct GameListView: View {
             appState.stopGame()
 
             while gameLibraryActivity.isScrolling {
-                try? await Task.sleep(for: .milliseconds(50))
+                try? await Task.sleep(nanoseconds: 50_000_000)
                 guard !Task.isCancelled else { return }
             }
 
             withAnimation(.smooth(duration: 0.52, extraBounce: 0.02)) {
                 departingRunningGameName = nil
             }
-            try? await Task.sleep(for: .milliseconds(540))
+            try? await Task.sleep(nanoseconds: 540_000_000)
             guard !Task.isCancelled else { return }
 
             // The collapsed values remain private to the departed placeholder.
@@ -9300,7 +9296,7 @@ private struct GameLibraryViewOptionsPanel: View {
     let onApply: () -> Void
 
     @Environment(\.uiAccentColour) private var accentColour
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var previewEndTask: Task<Void, Never>?
     @State private var showsResetConfirmation = false
     @State private var resetFeedbackVisible = false
@@ -9753,7 +9749,7 @@ private struct GameLibraryViewOptionsPanel: View {
         // same inactivity deadline; the popup reliably returns one second
         // after either touch or controller adjustment stops.
         previewEndTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1))
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
             guard !Task.isCancelled else { return }
             withAnimation(.easeOut(duration: 0.18)) {
                 onPreviewChanged(nil)
@@ -9774,7 +9770,7 @@ private struct GameLibraryViewOptionsPanel: View {
             controllerInput: controllerInput
         )
         resetFeedbackTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(2.4))
+            try? await Task.sleep(nanoseconds: 2_400_000_000)
             guard !Task.isCancelled else { return }
             withAnimation(.easeIn(duration: 0.18)) {
                 resetFeedbackVisible = false
@@ -9873,7 +9869,7 @@ private struct ExperimentalLibrarySliderRow: View {
 
 private struct GameInfoPanel: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     let game: ISOEntry
 
@@ -9957,7 +9953,7 @@ private struct GameInfoPanel: View {
 
 private struct DiscLinkPicker: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     let discs: [ISOEntry]
     let hasLinkedDisc: Bool

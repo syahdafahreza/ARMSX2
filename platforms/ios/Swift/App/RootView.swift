@@ -3,7 +3,6 @@
 
 import SwiftUI
 import UIKit
-import Observation
 import GameController
 
 private struct MenuTabIsActiveEnvironmentKey: EnvironmentKey {
@@ -160,8 +159,7 @@ private enum RootControllerAlertKind: Equatable {
 /// A question any screen can ask through RootView's prompt window. SwiftUI's own
 /// `.confirmationDialog` is a UIAlertController, which a controller cannot reach.
 @MainActor
-@Observable
-final class ControllerPrompt {
+final class ControllerPrompt: ObservableObject {
     struct Action {
         let title: String
         var isDestructive = false
@@ -177,7 +175,7 @@ final class ControllerPrompt {
     }
 
     static let shared = ControllerPrompt()
-    private(set) var request: Request?
+    @Published private(set) var request: Request?
 
     func ask(_ title: String, message: String, actions: [Action]) {
         request = Request(title: title, message: message, actions: actions)
@@ -513,15 +511,15 @@ struct GameplayControllerShortcutHelpOverlay: View {
 }
 
 struct RootView: View {
-    @State private var appState = AppState.shared
-    @State private var settings = SettingsStore.shared
-    @State private var frameRates = UIFrameRateSettings.shared
-    @State private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
-    @State private var fileImporter = FileImportHandler.shared
+    @ObservedObject private var appState = AppState.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var frameRates = UIFrameRateSettings.shared
+    @ObservedObject private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
+    @ObservedObject private var fileImporter = FileImportHandler.shared
     @State private var showBootSplash = !AppState.shared.automaticGameStartupPending
     @State private var showNoJITFinalConfirmation = false
     @State private var rootControllerAlertSelection = 0
-    @State private var menuControllerInput = MenuControllerInputRouter()
+    @StateObject private var menuControllerInput = MenuControllerInputRouter()
     @State private var bootSplashInputReleaseTask: Task<Void, Never>?
     @State private var presentedGameplayHelpSessionID: UUID?
     // Theme/background renderer changes are allowed to rebuild MenuTabView,
@@ -1034,7 +1032,7 @@ struct RootView: View {
         Task { @MainActor in
             // Keep the status bar out of the splash fade, then apply the menu
             // preference once the intro has actually left the hierarchy.
-            try? await Task.sleep(for: .milliseconds(220))
+            try? await Task.sleep(nanoseconds: 220_000_000)
             guard !Task.isCancelled,
                   !showBootSplash,
                   appState.currentScreen == .menu else { return }
@@ -1047,7 +1045,7 @@ struct RootView: View {
             // Keep consuming the press which dismissed the movie until UIKit
             // has completed the splash transition. Otherwise the same Cross
             // edge can reach the already-mounted game library underneath.
-            try? await Task.sleep(for: .milliseconds(400))
+            try? await Task.sleep(nanoseconds: 400_000_000)
             guard !Task.isCancelled else { return }
             menuControllerInput.setLaunchInputInterceptor(nil)
             bootSplashInputReleaseTask = nil
@@ -1706,9 +1704,8 @@ private struct MenuTabControllerCommandListener: View {
 }
 
 @MainActor
-@Observable
-private final class MenuControllerTabFocusState {
-    var focusedIndex = 0
+private final class MenuControllerTabFocusState: ObservableObject {
+    @Published var focusedIndex = 0
 
     init(focusedIndex: Int = 0) {
         self.focusedIndex = focusedIndex
@@ -1724,8 +1721,8 @@ private struct MenuBottomTabBarLayout {
 }
 
 struct MenuTabView: View {
-    @State private var settings = SettingsStore.shared
-    @State private var logoStore = ARMSX2LogoStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var logoStore = ARMSX2LogoStore.shared
     @Binding var selectedTab: Int
     @Binding var settingsNavigationPath: [SettingsPane]
     @State private var titleMorphSelection = 0
@@ -1735,7 +1732,7 @@ struct MenuTabView: View {
     @State private var menuLargeTitleMorphResetTask: Task<Void, Never>?
     @State private var controllerTabEntryTask: Task<Void, Never>?
     @State private var gameRenamePresented = false
-    @State private var controllerTabFocusState: MenuControllerTabFocusState
+    @StateObject private var controllerTabFocusState: MenuControllerTabFocusState
     @State private var menuViewportSize = CGSize.zero
     @AppStorage("ARMSX2iOSHideGamesScreenTitle")
     private var legacyHideGamesScreenTitle = true
@@ -1784,8 +1781,8 @@ struct MenuTabView: View {
         self._selectedTab = selectedTab
         self._settingsNavigationPath = settingsNavigationPath
         self._titleMorphSelection = State(initialValue: selectedTab.wrappedValue)
-        self._controllerTabFocusState = State(
-            initialValue: MenuControllerTabFocusState(
+        self._controllerTabFocusState = StateObject(
+            wrappedValue: MenuControllerTabFocusState(
                 focusedIndex: selectedTab.wrappedValue
             )
         )
@@ -1963,7 +1960,7 @@ struct MenuTabView: View {
             scheduleControllerContentEntry(for: tab)
         }
         menuLargeTitleMorphResetTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(280))
+            try? await Task.sleep(nanoseconds: 280_000_000)
             guard !Task.isCancelled else { return }
             menuLargeTitleMorphActive = false
             menuLargeTitleMorphResetTask = nil
@@ -2541,7 +2538,7 @@ private struct ControllerTabBarOrbOverlay: View {
 /// retained Games/BIOS/Settings hierarchy behind it.
 private struct ControllerFocusedMenuTabBar: View {
     @Binding var selection: Int
-    let focusState: MenuControllerTabFocusState
+    @ObservedObject var focusState: MenuControllerTabFocusState
     let controllerInput: MenuControllerInputRouter
     let layout: MenuBottomTabBarLayout
     let titles: [String]
@@ -2979,6 +2976,7 @@ private struct NativeMenuTabBar: UIViewRepresentable {
         }
     }
 
+    @available(iOS 16.0, *)
     func sizeThatFits(
         _ proposal: ProposedViewSize,
         uiView: LegacyCompatibleMenuTabBar,
@@ -4423,7 +4421,7 @@ private enum NormalTabContentMargin {
 #if targetEnvironment(macCatalyst)
 private struct CatalystMenuTabBar: View {
     @Binding var selectedTab: Int
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     private let tabs = [
         (0, "Games"),

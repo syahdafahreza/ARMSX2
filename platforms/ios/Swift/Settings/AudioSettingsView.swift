@@ -17,8 +17,8 @@ private enum AudioFilePickerDestination {
 }
 
 struct AudioSettingsView: View {
-    @State private var settings = SettingsStore.shared
-    @State private var audioPack = MenuAudioPackManager.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var audioPack = MenuAudioPackManager.shared
     @Environment(\.menuControllerInputRouter) private var controllerInput
     @State private var isAudioFilePickerPresented = false
     @State private var audioFilePickerDestination: AudioFilePickerDestination?

@@ -1547,7 +1547,7 @@ struct ThemePaletteEditor: View {
 
     backgroundPreviewTask = Task { @MainActor in
       if beforeDuration > 0 {
-        try? await Task.sleep(for: .seconds(beforeDuration))
+        try? await Task.sleep(nanoseconds: UInt64(beforeDuration * 1_000_000_000))
         guard !Task.isCancelled else { return }
 
         var themeTransaction = Transaction(animation: nil)
@@ -1560,7 +1560,7 @@ struct ThemePaletteEditor: View {
 
       guard activeSliderTitle == nil else { return }
       if afterDuration > 0 {
-        try? await Task.sleep(for: .seconds(afterDuration))
+        try? await Task.sleep(nanoseconds: UInt64(afterDuration * 1_000_000_000))
         guard !Task.isCancelled else { return }
       }
       endBackgroundPreview()
@@ -1573,7 +1573,7 @@ struct ThemePaletteEditor: View {
 
     backgroundPreviewTask = Task { @MainActor in
       if afterDuration > 0 {
-        try? await Task.sleep(for: .seconds(afterDuration))
+        try? await Task.sleep(nanoseconds: UInt64(afterDuration * 1_000_000_000))
         guard !Task.isCancelled else { return }
       }
       endBackgroundPreview()
@@ -1636,7 +1636,7 @@ struct ThemePaletteEditor: View {
     }
 
     previewFadeTask = Task { @MainActor in
-      try? await Task.sleep(for: .milliseconds(100))
+      try? await Task.sleep(nanoseconds: 100_000_000)
       guard !Task.isCancelled, backgroundPreviewOpacity == 0 else { return }
 
       activeUpdatedTheme = nil
@@ -1745,7 +1745,7 @@ struct ThemePaletteEditor: View {
 
     historyCommitTask?.cancel()
     historyCommitTask = Task { @MainActor in
-      try? await Task.sleep(for: .milliseconds(300))
+      try? await Task.sleep(nanoseconds: 300_000_000)
       guard !Task.isCancelled else { return }
       commitPendingUndoSnapshot()
     }

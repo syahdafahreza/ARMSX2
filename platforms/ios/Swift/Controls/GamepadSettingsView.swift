@@ -100,7 +100,7 @@ struct GamepadSettingsView: View {
     let onOpenPane: (SettingsPane) -> Void
     private let presentsLinkedPanesModally: Bool
 
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var capturingIndex: Int? = nil
     @State private var mappingVersion = 0
     @State private var pollTimer: Timer? = nil
@@ -439,7 +439,7 @@ private struct GamepadLinkedSettingsSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.menuControllerInputRouter) private var controllerInput
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     private var controllerTargetOrder: [String] {
         let contentOrder: [String]
@@ -526,7 +526,7 @@ struct ControllerMacrosSettingsView: View {
         } + ["controller.macros.reset"]
     }
 
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         Form {
@@ -635,7 +635,7 @@ struct LocalMultiplayerSettingsView: View {
         "settings.local-multiplayer.multitap-mode",
     ]
 
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         Form {

@@ -176,8 +176,7 @@ enum DynamicCrosshairAnimation: Int, CaseIterable, Identifiable {
 }
 
 @MainActor
-@Observable
-final class DynamicThumbstickSettings {
+final class DynamicThumbstickSettings: ObservableObject {
     static let shared = DynamicThumbstickSettings()
     private static let section = "ARMSX2iOS/DynamicThumbsticks"
 
@@ -613,13 +612,16 @@ final class DynamicThumbstickSettings {
 
     private func setBool(_ key: String, _ value: Bool) {
         ARMSX2Bridge.setINIBool(Self.section, key: key, value: value)
+        objectWillChange.send()
     }
 
     private func setDouble(_ key: String, _ value: Double) {
         ARMSX2Bridge.setINIFloat(Self.section, key: key, value: Float(value))
+        objectWillChange.send()
     }
 
     private func setInt(_ key: String, _ value: Int) {
         ARMSX2Bridge.setINIInt(Self.section, key: key, value: Int32(value))
+        objectWillChange.send()
     }
 }

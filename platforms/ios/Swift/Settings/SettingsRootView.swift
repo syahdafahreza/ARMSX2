@@ -414,7 +414,7 @@ private final class SettingsClearGlassListInstallerView: UIView {
     private func scheduleVisibleCellDecoration() {
         guard pendingDecoration == nil else { return }
         pendingDecoration = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(8))
+            try? await Task.sleep(nanoseconds: 8_000_000)
             guard !Task.isCancelled, let self else { return }
             UIView.performWithoutAnimation {
                 self.decorateVisibleCells()
@@ -624,7 +624,7 @@ struct SettingsRootView: View {
     let onPreviousControllerTab: @MainActor () -> Bool
     let onNextControllerTab: @MainActor () -> Bool
     let onControllerBoundary: @MainActor (MenuControllerCommand) -> Bool
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var controllerDestinationEntryTask: Task<Void, Never>?
     @State private var rootNeedsControllerReentry = false
     @State private var jitAvailable = false
@@ -1451,7 +1451,7 @@ struct SettingsRootView: View {
 }
 
 private struct LanguageSettingsView: View {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         Form {
@@ -1480,7 +1480,7 @@ private struct LanguageSettingsView: View {
 }
 
 private struct SettingsAboutView: View {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     var body: some View {
         Form {
@@ -1499,7 +1499,7 @@ private struct SettingsAboutView: View {
 }
 
 private struct NetworkSettingsView: View {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var hosts: [DNSHost] = []
     @State private var lastPersistedHosts: [DNSHost] = []
     @State private var networkAdapters: [String] = []
@@ -1714,7 +1714,7 @@ private struct NetworkSettingsView: View {
     private func scheduleHostSave() {
         hostSaveTask?.cancel()
         hostSaveTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(400))
+            try? await Task.sleep(nanoseconds: 400_000_000)
             guard !Task.isCancelled else { return }
             saveHosts()
             hostSaveTask = nil

@@ -5,6 +5,24 @@ import SwiftUI
 
 #if !os(macOS)
 
+// MARK: - Observation Compatibility
+
+@propertyWrapper
+public struct ObservationIgnored<T> {
+    public var wrappedValue: T
+    public init(wrappedValue: T) {
+        self.wrappedValue = wrappedValue
+    }
+}
+
+// MARK: - URL Documents Directory Compatibility
+
+public extension URL {
+    static var documentsDirectoryCompat: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+}
+
 // MARK: - NavigationStack Compatibility
 
 /// Provides a NavigationStack fallback for iOS 15, wrapping NavigationView,
@@ -292,6 +310,18 @@ public extension View {
     /// presentationDragIndicator stub for iOS 15.
     @ViewBuilder
     func presentationDragIndicator(_ visibility: Any) -> some View {
+        self
+    }
+
+    /// focusable stub for iOS 15.
+    @ViewBuilder
+    func focusable(_ isFocusable: Bool = true) -> some View {
+        self
+    }
+
+    /// focusEffectDisabled stub for iOS 15.
+    @ViewBuilder
+    func focusEffectDisabled(_ disabled: Bool = true) -> some View {
         self
     }
 }

@@ -4,7 +4,7 @@
 import SwiftUI
 
 struct FramePacingSettingsView: View {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var presetDetailsTarget: FramePacingPreset?
 
     var body: some View {

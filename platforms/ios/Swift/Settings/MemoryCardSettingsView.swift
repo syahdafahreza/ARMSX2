@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 import UIKit
 
 struct MemoryCardSettingsView: View {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var availableCards: [String] = []
     @State private var slot1Card = ""
     @State private var slot2Card = ""

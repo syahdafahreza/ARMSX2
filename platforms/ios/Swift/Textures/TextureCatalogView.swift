@@ -28,7 +28,7 @@ struct TextureCatalogView: View {
     private let serial: String?
     private let controllerInput: MenuControllerInputRouter?
     @Environment(\.dismiss) private var dismiss
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @State private var packs: [TextureCatalogPack]?
     @State private var loadFailed = false
     @State private var owned: Set<String> = []

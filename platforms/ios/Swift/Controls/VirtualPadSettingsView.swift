@@ -72,10 +72,10 @@ private final class SkinReplaceGate {
 struct VirtualPadSettingsView: View {
     let onOpenPane: (SettingsPane) -> Void
 
-    @State private var settings = SettingsStore.shared
-    @State private var dynamicSettings = DynamicThumbstickSettings.shared
-    @State private var layoutPresets = PadLayoutPresetStore.shared
-    @State private var skinLibrary = VPadSkinLibraryStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var dynamicSettings = DynamicThumbstickSettings.shared
+    @ObservedObject private var layoutPresets = PadLayoutPresetStore.shared
+    @ObservedObject private var skinLibrary = VPadSkinLibraryStore.shared
     @State private var showLayoutEditor = false
     @State private var showSkinImporter = false
     @State private var showSkinImportAlert = false

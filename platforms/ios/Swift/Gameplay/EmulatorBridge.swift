@@ -77,8 +77,7 @@ enum StikDebugLauncher {
     }
 }
 
-@Observable
-final class EmulatorBridge: @unchecked Sendable {
+final class EmulatorBridge: ObservableObject, @unchecked Sendable {
     static let shared = EmulatorBridge()
 
     @ObservationIgnored private var virtualRightTouchX: Float = 0

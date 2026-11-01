@@ -26,8 +26,7 @@ struct CoverDownloadSummary: Sendable {
 }
 
 @MainActor
-@Observable
-final class CoverStore {
+final class CoverStore: ObservableObject {
     static let shared = CoverStore()
 
     static let defaultCoverURLTemplate = "https://raw.githubusercontent.com/xlenore/ps2-covers/main/covers/default/${serial}.jpg"
@@ -45,23 +44,24 @@ final class CoverStore {
 
     private let fileManager = FileManager.default
 
-    var lastCoverMessage: String?
-    var showCoverAlert = false
+    @Published var lastCoverMessage: String?
+    @Published var showCoverAlert = false
     var coverURLTemplate: String {
         get {
             let stored = UserDefaults.standard.string(forKey: "ARMSX2iOSCoverURLTemplate")
             return stored?.isEmpty == false ? stored! : Self.defaultCoverURLTemplate
         }
         set {
+            objectWillChange.send()
             UserDefaults.standard.set(newValue.trimmingCharacters(in: .whitespacesAndNewlines), forKey: "ARMSX2iOSCoverURLTemplate")
         }
     }
-    var isDownloadingCovers = false
+    @Published var isDownloadingCovers = false
 
     private init() {}
 
     var primaryCoverDirectory: URL {
-        let docs = URL.documentsDirectory
+        let docs = URL.documentsDirectoryCompat
         let dir = docs.appendingPathComponent("armsx2_covers", isDirectory: true)
         try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
@@ -79,7 +79,7 @@ final class CoverStore {
 
     func makeLibraryCoverLookupIndex(gamePaths: [URL]) -> CoverLibraryLookupIndex {
         let managedDirectories = managedCoverDirectories()
-        let docs = URL.documentsDirectory
+        let docs = URL.documentsDirectoryCompat
         let iso = URL(fileURLWithPath: ARMSX2Bridge.isoDirectory(), isDirectory: true)
         let fallbackDirectories = uniqueURLs([iso, docs])
         let gameDirectories = gamePaths.map { $0.deletingLastPathComponent() }
@@ -364,7 +364,7 @@ final class CoverStore {
     }
 
     private func managedCoverDirectories() -> [URL] {
-        let docs = URL.documentsDirectory
+        let docs = URL.documentsDirectoryCompat
         let primary = primaryCoverDirectory
         let legacy = docs.appendingPathComponent("covers", isDirectory: true)
         try? fileManager.createDirectory(at: legacy, withIntermediateDirectories: true)
@@ -372,7 +372,7 @@ final class CoverStore {
     }
 
     private func coverSearchDirectories(gamePath: URL?) -> [URL] {
-        let docs = URL.documentsDirectory
+        let docs = URL.documentsDirectoryCompat
         let iso = URL(fileURLWithPath: ARMSX2Bridge.isoDirectory(), isDirectory: true)
         var dirs = managedCoverDirectories()
         if let gamePath {

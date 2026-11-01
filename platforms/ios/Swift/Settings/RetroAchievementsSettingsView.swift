@@ -6,7 +6,7 @@ import SwiftUI
 private let retroAchievementsNotification = Notification.Name("ARMSX2RetroAchievementsStateChanged")
 
 struct RetroAchievementsSettingsView: View {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     @Environment(\.menuControllerInputRouter) private var controllerInput
     @State private var state: [String: Any] = [:]
     @State private var achievementsEnabled = false
@@ -414,7 +414,7 @@ struct RetroAchievementsSettingsView: View {
 }
 
 private struct RetroAchievementsLoginSheet: View {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
     // Sheet-local state: keystrokes must not invalidate the presenting parent's
     // body, which would rebuild the sheet, re-snap the presentation detent, and
     // dismiss the keyboard.

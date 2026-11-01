@@ -304,7 +304,7 @@ private struct DynamicThumbstickVisual: View {
             withAnimation(.spring(response: 0.18, dampingFraction: 0.58)) {
                 maximumPullPulseProgress = 1
             }
-            try? await Task.sleep(for: .milliseconds(170))
+            try? await Task.sleep(nanoseconds: 170_000_000)
             guard !Task.isCancelled else { return }
             withAnimation(.easeOut(duration: 0.22)) {
                 maximumPullPulseProgress = 0
@@ -747,7 +747,7 @@ private final class VirtualPadActionPressCoordinator {
         pulseButtons[source] = button
         set(button, source: source, pressed: true)
         pulseTasks[source] = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(max(duration, 0)))
+            try? await Task.sleep(nanoseconds: UInt64(max(duration, 0) * 1_000_000_000))
             guard !Task.isCancelled, let self else { return }
             self.set(button, source: source, pressed: false)
             self.pulseTasks.removeValue(forKey: source)
@@ -770,21 +770,20 @@ func pulseVirtualPadActionButton(
 }
 
 @MainActor
-@Observable
-final class DynamicCrosshairRuntimeState {
-    private(set) var isAiming = false
-    private(set) var isSwipeCrosshairVisible = false
-    private(set) var isCameraMoving = false
-    private(set) var isCameraSettling = false
-    private(set) var isShooting = false
-    private(set) var isRapidFiring = false
-    private(set) var cameraMotion = DynamicThumbstickVector.zero
-    private(set) var cameraAcceleration = DynamicThumbstickVector.zero
-    private(set) var movementStartedAt = 0.0
-    private(set) var movementEndedAt = 0.0
-    private(set) var shotStartedAt = 0.0
-    private(set) var shotTiltRadians: CGFloat = 0
-    private(set) var rapidFireStartedAt = 0.0
+final class DynamicCrosshairRuntimeState: ObservableObject {
+    @Published private(set) var isAiming = false
+    @Published private(set) var isSwipeCrosshairVisible = false
+    @Published private(set) var isCameraMoving = false
+    @Published private(set) var isCameraSettling = false
+    @Published private(set) var isShooting = false
+    @Published private(set) var isRapidFiring = false
+    @Published private(set) var cameraMotion = DynamicThumbstickVector.zero
+    @Published private(set) var cameraAcceleration = DynamicThumbstickVector.zero
+    @Published private(set) var movementStartedAt = 0.0
+    @Published private(set) var movementEndedAt = 0.0
+    @Published private(set) var shotStartedAt = 0.0
+    @Published private(set) var shotTiltRadians: CGFloat = 0
+    @Published private(set) var rapidFireStartedAt = 0.0
 
     @ObservationIgnored private var sourceMotion: [DynamicCrosshairMotionSource: DynamicThumbstickVector] = [:]
     @ObservationIgnored private var settlingTask: Task<Void, Never>?
@@ -851,7 +850,7 @@ final class DynamicCrosshairRuntimeState {
         shotTask = nil
         guard !isRapidFiring else { return }
         shotTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(160))
+            try? await Task.sleep(nanoseconds: 160_000_000)
             guard !Task.isCancelled else { return }
             self?.isShooting = false
         }
@@ -888,7 +887,7 @@ final class DynamicCrosshairRuntimeState {
         swipeHideTask?.cancel()
         let delay = max(hideDelay, 0)
         swipeHideTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(delay))
+            try? await Task.sleep(nanoseconds: UInt64(max(delay, 0) * 1_000_000_000))
             guard !Task.isCancelled, let self else { return }
             self.isSwipeCrosshairVisible = false
             self.swipeHideTask = nil
@@ -920,7 +919,7 @@ final class DynamicCrosshairRuntimeState {
         movementEndedAt = now
         settlingTask?.cancel()
         settlingTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(260))
+            try? await Task.sleep(nanoseconds: 260_000_000)
             guard !Task.isCancelled, let self else { return }
             self.isCameraSettling = false
             self.cameraMotion = .zero
@@ -1082,7 +1081,7 @@ final class VirtualPadTouchActionController {
         aimReleaseTask?.cancel()
         let delay = max(DynamicThumbstickSettings.shared.aimReleaseDelay, 0)
         aimReleaseTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(delay))
+            try? await Task.sleep(nanoseconds: UInt64(max(delay, 0) * 1_000_000_000))
             guard !Task.isCancelled, let self, !self.touchActive else { return }
             self.aimEngaged = false
             self.setAimPressed(false)
@@ -1093,7 +1092,7 @@ final class VirtualPadTouchActionController {
         fireReleaseTask?.cancel()
         let delay = max(DynamicThumbstickSettings.shared.fireReleaseDelay, 0)
         fireReleaseTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(delay))
+            try? await Task.sleep(nanoseconds: UInt64(max(delay, 0) * 1_000_000_000))
             guard !Task.isCancelled, let self, !self.touchActive else { return }
             self.stopRapidFire()
         }
@@ -1106,7 +1105,7 @@ final class VirtualPadTouchActionController {
         crosshairState.triggerShot()
         GameEventHaptics.shared.dynamicActionShot()
         tapFireTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(75))
+            try? await Task.sleep(nanoseconds: 75_000_000)
             guard !Task.isCancelled else { return }
             self?.setTapFirePressed(false)
         }
@@ -1115,7 +1114,7 @@ final class VirtualPadTouchActionController {
     private func scheduleSingleFire(after delay: TimeInterval) {
         pendingSingleFireTask?.cancel()
         pendingSingleFireTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(max(delay, 0)))
+            try? await Task.sleep(nanoseconds: UInt64(max(delay, 0) * 1_000_000_000))
             guard !Task.isCancelled, let self else { return }
             self.pendingSingleFireTask = nil
             self.pulseFire()
@@ -1158,10 +1157,10 @@ final class VirtualPadTouchActionController {
                 let interval = max(DynamicThumbstickSettings.shared.automaticFireInterval, 0.06)
                 self.setHoldFirePressed(true)
                 self.crosshairState.triggerShot()
-                try? await Task.sleep(for: .seconds(min(interval * 0.45, 0.05)))
+                try? await Task.sleep(nanoseconds: UInt64(min(interval * 0.45, 0.05) * 1_000_000_000))
                 if Task.isCancelled { break }
                 self.setHoldFirePressed(false)
-                try? await Task.sleep(for: .seconds(max(interval * 0.55, 0.02)))
+                try? await Task.sleep(nanoseconds: UInt64(max(interval * 0.55, 0.02) * 1_000_000_000))
             }
             self?.setHoldFirePressed(false)
         }

@@ -19,7 +19,7 @@ extension EnvironmentValues {
 /// as the Quick Menu. Geometry and interaction remain local to each surface;
 /// only the material style comes from the shared persisted preference.
 private struct QuickMenuLiquidGlassConfigurationModifier: ViewModifier {
-    @State private var settings = SettingsStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
 
     func body(content: Content) -> some View {
         content.environment(
@@ -308,7 +308,7 @@ private struct DynamicBackgroundStyleCrossfadeView: View {
                 }
             }
 
-            try? await Task.sleep(for: .seconds(transitionDuration + 0.08))
+            try? await Task.sleep(nanoseconds: UInt64((transitionDuration + 0.08) * 1_000_000_000))
             layers.removeAll {
                 retiringIDs.contains($0.id) && $0.id != activeLayerID
             }
@@ -344,7 +344,7 @@ struct ResolutionAwareDynamicBackgroundContentView: View {
     let theme: DynamicBackgroundTheme
     var allowsMainMenuThermalFallback = false
 
-    @State private var frameRates = UIFrameRateSettings.shared
+    @ObservedObject private var frameRates = UIFrameRateSettings.shared
     @State private var thermalState = ProcessInfo.processInfo.thermalState
 
     var body: some View {
@@ -589,8 +589,8 @@ private extension DynamicBackgroundTheme {
 }
 
 struct DynamicBackgroundAppearanceSections: View {
-    @State private var settings = SettingsStore.shared
-    @State private var frameRates = UIFrameRateSettings.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var frameRates = UIFrameRateSettings.shared
     @Binding var preferences: DynamicAppearancePreferences
     let showPaletteEditor: () -> Void
 

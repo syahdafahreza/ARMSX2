@@ -6,8 +6,8 @@ import AVKit
 import ImageIO
 
 struct BackgroundContainerView: View {
-    @State private var settings = SettingsStore.shared
-    @State private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
+    @ObservedObject private var settings = SettingsStore.shared
+    @ObservedObject private var gameCoverThemePreview = GameCoverThemePreviewStore.shared
     let size: CGSize
     var isPresentationActive = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -94,7 +94,7 @@ struct BackgroundContainerView: View {
             inactiveReleaseTask = Task { @MainActor in
                 // Allow the immediate captured frame to enter the hierarchy
                 // before releasing the inactive live surface.
-                try? await Task.sleep(for: .milliseconds(32))
+                try? await Task.sleep(nanoseconds: 32_000_000)
                 guard !Task.isCancelled else { return }
                 isRenderingEnabled = false
                 videoPoster = nil

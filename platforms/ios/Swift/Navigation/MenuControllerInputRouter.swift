@@ -4,7 +4,6 @@
 import Foundation
 @preconcurrency import GameController
 import CoreHaptics
-import Observation
 import SwiftUI
 import UIKit
 
@@ -406,12 +405,11 @@ extension EnvironmentValues {
 /// individual D-pad handlers, so this deliberately uses only each profile's
 /// aggregate valueChangedHandler.
 @MainActor
-@Observable
-final class MenuControllerInputRouter {
+final class MenuControllerInputRouter: ObservableObject {
     /// While a save-state Undo is on screen, the macro chord also works over menus.
-    var saveStateUndoPending = false
+    @Published var saveStateUndoPending = false
     @ObservationIgnored private var undoChordHeld = false
-    private(set) var saveStateUndoRequest: UInt64 = 0
+    @Published private(set) var saveStateUndoRequest: UInt64 = 0
     private struct NavigationSessionTarget {
         let scopeKey: String
         let priority: Int
@@ -465,30 +463,30 @@ final class MenuControllerInputRouter {
         case nextTheme
     }
 
-    private(set) var latestEvent: MenuControllerInputEvent?
-    private(set) var latestEventTimestamp: TimeInterval?
-    private(set) var latestLibraryEntryRequest: MenuControllerLibraryEntryRequest?
-    private(set) var latestQuickPauseRequest: MenuControllerQuickPauseRequest?
-    private(set) var latestEmulationShortcutRequest:
+    @Published private(set) var latestEvent: MenuControllerInputEvent?
+    @Published private(set) var latestEventTimestamp: TimeInterval?
+    @Published private(set) var latestLibraryEntryRequest: MenuControllerLibraryEntryRequest?
+    @Published private(set) var latestQuickPauseRequest: MenuControllerQuickPauseRequest?
+    @Published private(set) var latestEmulationShortcutRequest:
         EmulationControllerShortcutRequest?
-    private(set) var latestThemePresetRequest: MenuControllerThemePresetRequest?
-    private(set) var pendingNavigationModeSwitchRequest:
+    @Published private(set) var latestThemePresetRequest: MenuControllerThemePresetRequest?
+    @Published private(set) var pendingNavigationModeSwitchRequest:
         MenuNavigationModeSwitchRequest?
     /// Window-space geometry published by the real tab bar. RootView portals
     /// this frame into the presentation-wide orb host so crossing a safe-area
     /// boundary never replaces the active particle field.
-    private(set) var tabBarOrbFocusFrameInWindow: CGRect?
-    private(set) var tabBarOrbFocusedIndex: Int?
-    private(set) var tabBarOrbSelectedIndex: Int?
-    private(set) var focusReleaseSequence: UInt64 = 0
-    private(set) var rightStickScrollEndSequence: UInt64 = 0
-    private(set) var isMenuActive = false
-    private(set) var isNavigationCaptured = false
-    private(set) var hasConnectedController = false
-    private(set) var isControllerNavigationEnabled = false
-    private(set) var activeNavigationInputMode: MenuNavigationInputMode = .touch
-    private(set) var navigationZone: MenuControllerNavigationZone = .library
-    private(set) var pressedFaceButton: MenuControllerFaceButton?
+    @Published private(set) var tabBarOrbFocusFrameInWindow: CGRect?
+    @Published private(set) var tabBarOrbFocusedIndex: Int?
+    @Published private(set) var tabBarOrbSelectedIndex: Int?
+    @Published private(set) var focusReleaseSequence: UInt64 = 0
+    @Published private(set) var rightStickScrollEndSequence: UInt64 = 0
+    @Published private(set) var isMenuActive = false
+    @Published private(set) var isNavigationCaptured = false
+    @Published private(set) var hasConnectedController = false
+    @Published private(set) var isControllerNavigationEnabled = false
+    @Published private(set) var activeNavigationInputMode: MenuNavigationInputMode = .touch
+    @Published private(set) var navigationZone: MenuControllerNavigationZone = .library
+    @Published private(set) var pressedFaceButton: MenuControllerFaceButton?
 
     @ObservationIgnored private var sequence: UInt64 = 0
     @ObservationIgnored private var connectObserver: NSObjectProtocol?
@@ -1443,7 +1441,7 @@ final class MenuControllerInputRouter {
         themePresetRepeatTasks[profileID]?[button]?.cancel()
         let task = Task { @MainActor [weak self] in
             do {
-                try await Task.sleep(for: .milliseconds(420))
+                try await Task.sleep(nanoseconds: 420_000_000)
             } catch {
                 return
             }
@@ -1455,7 +1453,7 @@ final class MenuControllerInputRouter {
                 guard self.publishThemePresetRequest(step: step) else { return }
                 do {
                     try await Task.sleep(
-                        for: .milliseconds(repeatInterval)
+                        nanoseconds: UInt64(repeatInterval) * 1_000_000
                     )
                 } catch {
                     return
@@ -1678,7 +1676,7 @@ final class MenuControllerInputRouter {
             emit(direction)
         }
         repeatTasks[profileID] = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(320))
+            try? await Task.sleep(nanoseconds: 320_000_000)
             guard let self, !Task.isCancelled else { return }
 
             while !Task.isCancelled,
@@ -1697,7 +1695,7 @@ final class MenuControllerInputRouter {
                 )
                 let interval = max(0.04, 0.10 / acceleration)
                 try? await Task.sleep(
-                    for: .milliseconds(Int((interval * 1_000).rounded()))
+                    nanoseconds: UInt64(max(0.04, interval) * 1_000_000_000)
                 )
             }
         }
@@ -1799,7 +1797,7 @@ final class MenuControllerInputRouter {
     ) {
         cancelEmulationMacroRepeat(action, profileID: profileID)
         let task = Task { @MainActor [weak self, weak gamepad] in
-            try? await Task.sleep(for: .milliseconds(320))
+            try? await Task.sleep(nanoseconds: 320_000_000)
             guard let self, let gamepad, !Task.isCancelled else { return }
             while !Task.isCancelled,
                   !self.isMenuActive,
@@ -1808,7 +1806,7 @@ final class MenuControllerInputRouter {
                     .isPressed(on: gamepad),
                   self.emulationMacroLatches[profileID]?.contains(action) == true {
                 self.publishControllerMacro(action)
-                try? await Task.sleep(for: .milliseconds(100))
+                try? await Task.sleep(nanoseconds: 100_000_000)
             }
         }
         emulationMacroRepeatTasks[profileID, default: [:]][action] = task
@@ -3299,19 +3297,19 @@ private final class MenuControllerFeedbackPlayer {
             notification().prepare()
         case .contextMenu:
             impact(.medium, intensity: 0.62)
-            scheduleDeviceImpact(.soft, intensity: 0.42, after: .milliseconds(58))
+            scheduleDeviceImpact(.soft, intensity: 0.42, after: 58_000_000)
         case .submenu:
             impact(.light, intensity: 0.46)
-            scheduleDeviceImpact(.rigid, intensity: 0.36, after: .milliseconds(48))
+            scheduleDeviceImpact(.rigid, intensity: 0.36, after: 48_000_000)
         case .destination:
             impact(.rigid, intensity: 0.66)
-            scheduleDeviceImpact(.soft, intensity: 0.48, after: .milliseconds(62))
+            scheduleDeviceImpact(.soft, intensity: 0.48, after: 62_000_000)
         case .previousTab:
             impact(.medium, intensity: 0.50)
-            scheduleDeviceImpact(.light, intensity: 0.30, after: .milliseconds(52))
+            scheduleDeviceImpact(.light, intensity: 0.30, after: 52_000_000)
         case .nextTab:
             impact(.light, intensity: 0.30)
-            scheduleDeviceImpact(.medium, intensity: 0.50, after: .milliseconds(52))
+            scheduleDeviceImpact(.medium, intensity: 0.50, after: 52_000_000)
         }
     }
 
@@ -3465,10 +3463,12 @@ private final class MenuControllerFeedbackPlayer {
     private func scheduleDeviceImpact(
         _ style: DeviceImpactStyle,
         intensity: CGFloat,
-        after delay: Duration
+        after delayNanos: UInt64
     ) {
         delayedDeviceFeedbackTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: delay)
+            if delayNanos > 0 {
+                try? await Task.sleep(nanoseconds: delayNanos)
+            }
             guard let self, !Task.isCancelled else { return }
             self.impact(style, intensity: intensity)
             self.delayedDeviceFeedbackTask = nil

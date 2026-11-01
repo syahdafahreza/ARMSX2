@@ -3,7 +3,6 @@
 
 import AVFoundation
 import Foundation
-import Observation
 
 enum MenuAudioPackImportError: LocalizedError, Sendable {
     case notZip
@@ -25,8 +24,7 @@ enum MenuAudioPackImportError: LocalizedError, Sendable {
 /// Owns the menu soundtrack and short UI effects. Playback stays centralized so
 /// retained Settings views and recycled controller targets never own audio players.
 @MainActor
-@Observable
-final class MenuAudioPackManager {
+final class MenuAudioPackManager: ObservableObject {
     enum Sound: String, CaseIterable, Sendable {
         case startup
         case background
@@ -153,12 +151,12 @@ final class MenuAudioPackManager {
         )
     ]
 
-    private(set) var installedPackName: String?
-    private(set) var usesBundledDefault = false
-    private(set) var isWorking = false
-    private(set) var uiAudioVolume = 1.0
-    private(set) var customUIAudioEnabled = true
-    private(set) var customSounds: Set<Sound> = []
+    @Published private(set) var installedPackName: String?
+    @Published private(set) var usesBundledDefault = false
+    @Published private(set) var isWorking = false
+    @Published private(set) var uiAudioVolume = 1.0
+    @Published private(set) var customUIAudioEnabled = true
+    @Published private(set) var customSounds: Set<Sound> = []
 
     @ObservationIgnored private var soundURLs: [Sound: URL] = [:]
     @ObservationIgnored private var customSoundURLs: [Sound: URL] = [:]
@@ -410,7 +408,7 @@ final class MenuAudioPackManager {
         // A normal menu-state publication can land one run-loop turn after the
         // native shutdown notification. Retry only if playback is still absent.
         emulationAudioRecoveryTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(180))
+            try? await Task.sleep(nanoseconds: 180_000_000)
             guard let self, !Task.isCancelled else { return }
             self.emulationAudioRecoveryTask = nil
             guard self.mainInterfaceIsActive,
@@ -850,7 +848,7 @@ final class MenuAudioPackManager {
 
         startupRetryAttempt += 1
         startupRetryTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(150))
+            try? await Task.sleep(nanoseconds: 150_000_000)
             guard let self, !Task.isCancelled else { return }
             self.startupRetryTask = nil
             self.audioSessionPrepared = false

@@ -1,7 +1,6 @@
 // UIFrameRateSettings.swift — user-selectable UI and effect frame pacing
 // SPDX-License-Identifier: GPL-3.0+
 
-import Observation
 import QuartzCore
 import SwiftUI
 import UIKit
@@ -205,8 +204,7 @@ struct UIFrameRateConfiguration: Equatable, Sendable {
 }
 
 @MainActor
-@Observable
-final class UIFrameRateSettings {
+final class UIFrameRateSettings: ObservableObject {
     static let shared = UIFrameRateSettings()
 
     static let displayRefreshRateRange: ClosedRange<Double> = 30...120
@@ -485,6 +483,7 @@ final class UIFrameRateSettings {
     ) {
         let clamped = min(max(value, range.lowerBound), range.upperBound)
         UserDefaults.standard.set(clamped, forKey: key)
+        objectWillChange.send()
     }
 }
 
