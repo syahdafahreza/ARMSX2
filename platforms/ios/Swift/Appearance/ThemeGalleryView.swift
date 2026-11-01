@@ -18,7 +18,7 @@ struct ThemeGalleryView: View {
     @ObservedObject private var settings = SettingsStore.shared
     @ObservedObject private var gallery = ThemeGalleryStore.shared
     @State private var page: Page = .themes
-    @ObservedObject private var preferences = SettingsStore.shared.dynamicAppearancePreferences
+    @State private var preferences = SettingsStore.shared.dynamicAppearancePreferences
     @State private var paletteTarget: ThemePaletteTarget = .shared
     @State private var original: AppearanceThemeSnapshot?
     @State private var originalSelection: AppearanceThemeSelection?

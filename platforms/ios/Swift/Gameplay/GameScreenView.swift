@@ -2894,7 +2894,7 @@ private struct RetroAchievementRow: View {
 // MARK: - Speed Control Panel
 
 private struct SpeedControlPanel: View {
-    @Bindable var settings: SettingsStore
+    @ObservedObject var settings: SettingsStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.menuControllerInputRouter) private var controllerInput
     @State private var hardcoreActive = false

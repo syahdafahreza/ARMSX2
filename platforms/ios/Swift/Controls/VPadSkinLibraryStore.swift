@@ -938,7 +938,7 @@ final class VPadSkinLibraryStore: ObservableObject, @unchecked Sendable {
     }
 
     private static func defaultRootURL() -> URL {
-        let base = URL.applicationSupportDirectory
+        let base = URL.applicationSupportDirectoryCompat
         return base.appendingPathComponent("ARMSX2", isDirectory: true)
     }
 }

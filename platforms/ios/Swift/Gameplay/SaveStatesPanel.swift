@@ -1309,7 +1309,7 @@ private struct SaveStateRenameCard: View {
 
 /// The same settings as in Settings > Emulator.
 private struct SaveStateAutoSaveCard: View {
-    @Bindable var settings: SettingsStore
+    @ObservedObject var settings: SettingsStore
     let ids: (enabled: String, interval: String, leave: String, battery: String, done: String)
     let onDone: () -> Void
 

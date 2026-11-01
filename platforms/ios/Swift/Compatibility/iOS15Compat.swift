@@ -2,15 +2,34 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 import SwiftUI
+#if canImport(PhotosUI)
+import PhotosUI
+#endif
+#if canImport(UniformTypeIdentifiers)
+import UniformTypeIdentifiers
+#endif
 
 #if !os(macOS)
 
-// MARK: - URL Documents Directory Compatibility
+// MARK: - URL Directories Compatibility
 
 public extension URL {
     static var documentsDirectoryCompat: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
+
+    static var applicationSupportDirectoryCompat: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    }
+}
+
+// MARK: - PhotosPickerItem Compatibility for iOS 15
+
+public struct PhotosPickerItem: Equatable, Hashable, Sendable {
+    public var id: String = UUID().uuidString
+    public init() {}
+    public func loadTransferable<T>(type: T.Type) async throws -> Data? { nil }
+    public var supportedContentTypes: [UTType] { [] }
 }
 
 // MARK: - NavigationStack Compatibility
@@ -254,7 +273,7 @@ public struct AnyLayout {
 
 // MARK: - UnevenRoundedRectangle Compatibility
 
-public struct RectangleCornerRadii: Equatable {
+public struct RectangleCornerRadii: Equatable, Sendable {
     public var topLeading: CGFloat
     public var bottomLeading: CGFloat
     public var bottomTrailing: CGFloat
@@ -337,7 +356,7 @@ public struct UnevenRoundedRectangle: Shape {
 
 // MARK: - Compatibility Enums & Structs
 
-public struct CompatVisibility: Hashable, ExpressibleByBooleanLiteral {
+public struct CompatVisibility: Hashable, ExpressibleByBooleanLiteral, Sendable {
     public static let automatic = CompatVisibility(0)
     public static let visible = CompatVisibility(1)
     public static let hidden = CompatVisibility(2)
@@ -350,37 +369,37 @@ public struct CompatVisibility: Hashable, ExpressibleByBooleanLiteral {
     }
 }
 
-public struct CompatToolbarPlacement: Hashable {
+public struct CompatToolbarPlacement: Hashable, Sendable {
     public static let navigationBar = CompatToolbarPlacement()
     public static let bottomBar = CompatToolbarPlacement()
     public static let tabBar = CompatToolbarPlacement()
     public static let automatic = CompatToolbarPlacement()
 }
 
-public struct CompatPresentationDetent: Hashable {
+public struct CompatPresentationDetent: Hashable, Sendable {
     public static let medium = CompatPresentationDetent()
     public static let large = CompatPresentationDetent()
     public static func fraction(_ fraction: CGFloat) -> CompatPresentationDetent { CompatPresentationDetent() }
     public static func height(_ height: CGFloat) -> CompatPresentationDetent { CompatPresentationDetent() }
 }
 
-public struct CompatContentMarginPlacement: Hashable {
+public struct CompatContentMarginPlacement: Hashable, Sendable {
     public static let scrollContent = CompatContentMarginPlacement()
     public static let automatic = CompatContentMarginPlacement()
 }
 
-public struct CompatScrollBounceBehavior: Hashable {
+public struct CompatScrollBounceBehavior: Hashable, Sendable {
     public static let always = CompatScrollBounceBehavior()
     public static let basedOnSize = CompatScrollBounceBehavior()
     public static let automatic = CompatScrollBounceBehavior()
 }
 
-public struct CompatNavigationSplitViewStyle: Hashable {
+public struct CompatNavigationSplitViewStyle: Hashable, Sendable {
     public static let balanced = CompatNavigationSplitViewStyle()
     public static let prominentDetail = CompatNavigationSplitViewStyle()
 }
 
-public struct CompatContainerBackgroundPlacement: Hashable {
+public struct CompatContainerBackgroundPlacement: Hashable, Sendable {
     public static let navigation = CompatContainerBackgroundPlacement()
     public static let widget = CompatContainerBackgroundPlacement()
 }
@@ -629,6 +648,12 @@ public extension View {
     /// sensoryFeedback stub for iOS 15/16.
     @ViewBuilder
     func sensoryFeedback<T: Equatable>(_ feedback: Any, trigger: T) -> some View {
+        self
+    }
+
+    /// photosPicker stub for iOS 15.
+    @ViewBuilder
+    func photosPicker<T>(isPresented: Binding<Bool>, selection: Binding<T?>, matching filter: Any? = nil) -> some View {
         self
     }
 }

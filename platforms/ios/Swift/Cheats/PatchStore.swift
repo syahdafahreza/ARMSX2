@@ -837,7 +837,7 @@ final class PatchStore: ObservableObject {
     private static let sidecarFilename = "CheatsMetadata.json"
 
     private var sidecarURL: URL {
-        let base = URL.applicationSupportDirectory
+        let base = URL.applicationSupportDirectoryCompat
         let directory = base.appendingPathComponent("ARMSX2", isDirectory: true)
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory.appendingPathComponent(Self.sidecarFilename)
