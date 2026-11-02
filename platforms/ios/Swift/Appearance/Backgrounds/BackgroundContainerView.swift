@@ -140,7 +140,12 @@ struct BackgroundContainerView: View {
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
         do {
-            let (cgImage, _) = try await generator.image(at: .zero)
+            let cgImage: CGImage
+            if #available(iOS 16.0, *) {
+                (cgImage, _) = try await generator.image(at: .zero)
+            } else {
+                cgImage = try generator.copyCGImage(at: .zero, actualTime: nil)
+            }
             videoPoster = UIImage(cgImage: cgImage)
         } catch {
             videoPoster = nil
