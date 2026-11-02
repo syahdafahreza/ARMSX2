@@ -3253,6 +3253,7 @@ struct GameListView: View {
                         .accessibilityLabel(settings.localized("Boot BIOS"))
                         .fixedSize()
                     }
+                    }
                 }
                 ToolbarItem(id: "menu.import", placement: .navigationBarTrailing) {
                     if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
@@ -3264,6 +3265,7 @@ struct GameListView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(settings.localized("Import Games"))
+                    }
                 }
                 .prefersVerticalBar()
                 ToolbarItem(id: "menu.layout", placement: .navigationBarTrailing) {
@@ -3303,6 +3305,7 @@ struct GameListView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(settings.localized("Library Layout"))
+                    }
                 }
                 ToolbarItem(id: "menu.more", placement: .navigationBarTrailing) {
                     if !embeddedInMenuNavigation || ownsEmbeddedMenuToolbar {
