@@ -820,6 +820,16 @@ public extension View {
         self
     }
 
+    /// buttonBorderShape circle compatibility for iOS 15/16.
+    @ViewBuilder
+    func buttonBorderShapeCircleCompat() -> some View {
+        if #available(iOS 17.0, *) {
+            self.buttonBorderShape(.circle)
+        } else {
+            self.buttonBorderShape(.capsule)
+        }
+    }
+
     /// photosPicker implementation for iOS 15+.
     @ViewBuilder
     func photosPicker(
