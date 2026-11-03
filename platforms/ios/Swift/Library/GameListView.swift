@@ -3039,12 +3039,28 @@ struct GameListView: View {
         }
     }
 
+    @ViewBuilder
+    private func libraryContent(containerSize: CGSize) -> some View {
+        if games.isEmpty && displayedRunningGameName == nil {
+            emptyLibrary(containerSize: containerSize)
+        } else if libraryLayout == "grid" && containerSize.width > containerSize.height && landscapeCoverFlowEnabled {
+            coverFlowLibrary(containerSize: containerSize)
+        } else if libraryLayout == "grid" {
+            gridLibrary(containerSize: containerSize)
+        } else {
+            listLibrary
+#if targetEnvironment(macCatalyst)
+            .listStyle(.inset)
+#endif
+        }
+    }
+
     var body: some View {
         // Give the compiler a concrete boundary before the lifecycle modifier
         // chain. This screen owns many independent presentations; inferring
         // all of them plus every `onChange` as one nested generic type can
         // exceed Swift's Release type-check budget.
-        let presentation = OptionalMenuNavigationStack(
+        let presentation = AnyView(OptionalMenuNavigationStack(
             embedded: embeddedInMenuNavigation
         ) {
             ZStack {
@@ -3055,20 +3071,7 @@ struct GameListView: View {
 
                 if renameTarget == nil {
                     GeometryReader { geo in
-                        Group {
-                            if games.isEmpty && displayedRunningGameName == nil {
-                                emptyLibrary(containerSize: geo.size)
-                            } else if libraryLayout == "grid" && geo.size.width > geo.size.height && landscapeCoverFlowEnabled {
-                                coverFlowLibrary(containerSize: geo.size)
-                            } else if libraryLayout == "grid" {
-                                gridLibrary(containerSize: geo.size)
-                            } else {
-                                listLibrary
-#if targetEnvironment(macCatalyst)
-                                .listStyle(.inset)
-#endif
-                            }
-                        }
+                        libraryContent(containerSize: geo.size)
                         // Portrait grids/lists and landscape cover flow use
                         // different scroll axes. Give each presentation a stable
                         // identity so rotation cannot reuse the previous
@@ -3082,7 +3085,7 @@ struct GameListView: View {
                                 scheduleLandscapeControllerAutofocus()
                             }
                         }
-                        .onChange(of: geo.size) { previousSize, size in
+                        .onChange(of: geo.size) { (previousSize: CGSize, size: CGSize) in
                             let enteredLandscape = size.width > size.height
                                 && previousSize.width <= previousSize.height
                             libraryContainerSize = size
@@ -3841,7 +3844,8 @@ struct GameListView: View {
             } message: {
                 Text(settings.localized("This will shut down the running game. All unsaved progress will be lost."))
             }
-        let libraryObservers = presentation
+        )
+        let libraryObservers = AnyView(presentation
         .onAppear(perform: handleLibraryAppear)
         .onChange(of: renameTarget != nil, initial: true) { _, isPresented in
             onRenamePresentationChanged(isPresented)
@@ -3879,9 +3883,10 @@ struct GameListView: View {
         .onReceive(
             NotificationCenter.default.publisher(for: NSNotification.Name("ARMSX2iOSReturnToMenu"))
         ) { _ in handleReturnToMenu() }
+        )
 
         return libraryObservers
-        .onChange(of: games) { _, updatedGames in
+        .onChange(of: games) { (_: [ISOEntry], updatedGames: [ISOEntry]) in
             controllerFocusState.updateGameIDs(updatedGames.map(\.id))
             updateGameCoverThemePreview(for: controllerSelectedGameID)
             if let controllerSelectedGameID,
@@ -3929,7 +3934,7 @@ struct GameListView: View {
                 focusScrollCoordinator.cancel()
             }
         }
-        .onChange(of: menuTabIsActive) { _, active in
+        .onChange(of: menuTabIsActive) { (_: Bool, active: Bool) in
             updateGameCoverThemePreview(
                 for: active ? controllerSelectedGameID : nil
             )
