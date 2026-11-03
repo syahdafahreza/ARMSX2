@@ -23,13 +23,106 @@ public extension URL {
     }
 }
 
-// MARK: - PhotosPickerItem Compatibility for iOS 15
+// MARK: - PhotosPicker Compatibility for iOS 15
 
-public struct PhotosPickerItem: Equatable, Hashable, Sendable {
+public struct PhotosPickerItem: Equatable, Hashable, @unchecked Sendable {
     public var id: String = UUID().uuidString
-    public init() {}
-    public func loadTransferable<T>(type: T.Type) async throws -> Data? { nil }
-    public var supportedContentTypes: [UTType] { [] }
+    public var itemData: Data?
+    public var contentType: UTType?
+
+    public init(data: Data? = nil, contentType: UTType? = nil) {
+        self.itemData = data
+        self.contentType = contentType
+    }
+
+    public static func == (lhs: PhotosPickerItem, rhs: PhotosPickerItem) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    public func loadTransferable<T>(type: T.Type) async throws -> Data? {
+        itemData
+    }
+
+    public var supportedContentTypes: [UTType] {
+        get async {
+            if let contentType = contentType {
+                return [contentType]
+            }
+            return [.image]
+        }
+    }
+}
+
+public struct CompatPHPickerSheet: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
+    @Binding var selection: PhotosPickerItem?
+    let filter: PHPickerFilter?
+
+    public init(isPresented: Binding<Bool>, selection: Binding<PhotosPickerItem?>, filter: PHPickerFilter?) {
+        self._isPresented = isPresented
+        self._selection = selection
+        self.filter = filter
+    }
+
+    public func makeUIViewController(context: Context) -> PHPickerViewController {
+        var configuration = PHPickerConfiguration()
+        if let filter = filter {
+            configuration.filter = filter
+        }
+        configuration.selectionLimit = 1
+        let picker = PHPickerViewController(configuration: configuration)
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    public func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+
+    public func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    public class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let parent: CompatPHPickerSheet
+
+        init(_ parent: CompatPHPickerSheet) {
+            self.parent = parent
+        }
+
+        public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            parent.isPresented = false
+            guard let result = results.first else { return }
+
+            let itemProvider = result.itemProvider
+            let identifiers = itemProvider.registeredTypeIdentifiers
+            let selectedIdentifier: String? = identifiers.first(where: { id in
+                guard let ut = UTType(id) else { return false }
+                return ut.conforms(to: .image) || ut.conforms(to: .movie)
+            }) ?? identifiers.first
+
+            if let typeIdentifier = selectedIdentifier {
+                let uttype = UTType(typeIdentifier)
+                itemProvider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
+                    if let data = data {
+                        DispatchQueue.main.async {
+                            self.parent.selection = PhotosPickerItem(data: data, contentType: uttype)
+                        }
+                    } else {
+                        itemProvider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { url, _ in
+                            if let url = url, let data = try? Data(contentsOf: url) {
+                                DispatchQueue.main.async {
+                                    self.parent.selection = PhotosPickerItem(data: data, contentType: uttype)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Animation Compatibility for iOS 15
@@ -727,10 +820,17 @@ public extension View {
         self
     }
 
-    /// photosPicker stub for iOS 15.
+    /// photosPicker implementation for iOS 15+.
     @ViewBuilder
-    func photosPicker<T>(isPresented: Binding<Bool>, selection: Binding<T?>, matching filter: Any? = nil) -> some View {
-        self
+    func photosPicker(
+        isPresented: Binding<Bool>,
+        selection: Binding<PhotosPickerItem?>,
+        matching filter: PHPickerFilter? = nil
+    ) -> some View {
+        self.sheet(isPresented: isPresented) {
+            CompatPHPickerSheet(isPresented: isPresented, selection: selection, filter: filter)
+                .ignoresSafeArea()
+        }
     }
 
     /// contentTransition stub for iOS 15.
