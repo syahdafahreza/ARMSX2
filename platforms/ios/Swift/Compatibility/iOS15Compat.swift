@@ -420,6 +420,37 @@ public struct CompatContainerBackgroundPlacement: Hashable, Sendable {
     public static let widget = CompatContainerBackgroundPlacement()
 }
 
+public struct CompatButtonRepeatBehavior: Hashable, Sendable {
+    public static let enabled = CompatButtonRepeatBehavior()
+    public static let disabled = CompatButtonRepeatBehavior()
+}
+
+public struct CompatSymbolEffect: Hashable, Sendable {
+    public static let replace = CompatSymbolEffect()
+    public static let bounce = CompatSymbolEffect()
+    public static let pulse = CompatSymbolEffect()
+    public static let scale = CompatSymbolEffect()
+    public static let appear = CompatSymbolEffect()
+    public static let disappear = CompatSymbolEffect()
+}
+
+public struct CompatContentTransition: Hashable, Sendable {
+    public static let interpolate = CompatContentTransition()
+    public static let opacity = CompatContentTransition()
+    public static let identity = CompatContentTransition()
+    public static let symbolEffect = CompatContentTransition()
+
+    public static func numericText(countsDown: Bool = false) -> CompatContentTransition {
+        CompatContentTransition()
+    }
+    public static func numericText(value: Double) -> CompatContentTransition {
+        CompatContentTransition()
+    }
+    public static func symbolEffect(_ effect: CompatSymbolEffect) -> CompatContentTransition {
+        CompatContentTransition()
+    }
+}
+
 // MARK: - View Modifier Compatibility
 
 private struct OnChangeCompatibilityModifier<V: Equatable>: ViewModifier {
@@ -699,6 +730,30 @@ public extension View {
     /// photosPicker stub for iOS 15.
     @ViewBuilder
     func photosPicker<T>(isPresented: Binding<Bool>, selection: Binding<T?>, matching filter: Any? = nil) -> some View {
+        self
+    }
+
+    /// contentTransition stub for iOS 15.
+    @ViewBuilder
+    func contentTransition(_ transition: CompatContentTransition) -> some View {
+        self
+    }
+
+    /// symbolEffect stub for iOS 15/16.
+    @ViewBuilder
+    func symbolEffect<T: Equatable>(_ effect: CompatSymbolEffect, value: T) -> some View {
+        self
+    }
+
+    /// symbolEffect stub for iOS 15/16.
+    @ViewBuilder
+    func symbolEffect(_ effect: CompatSymbolEffect, isActive: Bool = true) -> some View {
+        self
+    }
+
+    /// buttonRepeatBehavior stub for iOS 15/16.
+    @ViewBuilder
+    func buttonRepeatBehavior(_ behavior: CompatButtonRepeatBehavior) -> some View {
         self
     }
 }
