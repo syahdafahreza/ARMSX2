@@ -1132,11 +1132,19 @@ struct CheatsPatchesManagerView: View {
         onRemove: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 8) {
-            TextField(placeholder, text: text, axis: .vertical)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .font(.caption.monospaced())
-                .accessibilityLabel(label)
+            if #available(iOS 16.0, *) {
+                TextField(placeholder, text: text, axis: .vertical)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .font(.caption.monospaced())
+                    .accessibilityLabel(label)
+            } else {
+                TextField(placeholder, text: text)
+                    .textInputAutocapitalization(.never)
+                    .disableAutocorrection(true)
+                    .font(.caption.monospaced())
+                    .accessibilityLabel(label)
+            }
             Button(action: onRemove) {
                 Image(systemName: "minus.circle.fill")
                     .uiCriticalForegroundStyle()
