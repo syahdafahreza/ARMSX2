@@ -324,7 +324,7 @@ struct VirtualControllerView: View {
             )
         }
         // A fold moves the pad to the other screen and its touches never end.
-        .onChange(of: largeLayout) { resetDynamicInputs() }
+        .onChange(of: largeLayout) { _ in resetDynamicInputs() }
 
     }
 

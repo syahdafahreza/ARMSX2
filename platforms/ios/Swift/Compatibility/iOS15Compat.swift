@@ -445,6 +445,35 @@ private struct OnChangeCompatibilityModifier<V: Equatable>: ViewModifier {
 }
 
 public extension View {
+    /// Zero-argument onChange backport for iOS 15.
+    @ViewBuilder
+    func onChange<V: Equatable>(
+        of value: V,
+        _ action: @escaping () -> Void
+    ) -> some View {
+        self.modifier(OnChangeCompatibilityModifier(value: value, initial: false, action: { _, _ in action() }))
+    }
+
+    /// Zero-argument with initial flag onChange backport for iOS 15.
+    @ViewBuilder
+    func onChange<V: Equatable>(
+        of value: V,
+        initial: Bool,
+        _ action: @escaping () -> Void
+    ) -> some View {
+        self.modifier(OnChangeCompatibilityModifier(value: value, initial: initial, action: { _, _ in action() }))
+    }
+
+    /// Single-argument (newValue) with initial flag onChange backport for iOS 15.
+    @ViewBuilder
+    func onChange<V: Equatable>(
+        of value: V,
+        initial: Bool,
+        _ action: @escaping (_ newValue: V) -> Void
+    ) -> some View {
+        self.modifier(OnChangeCompatibilityModifier(value: value, initial: initial, action: { _, new in action(new) }))
+    }
+
     /// Two-argument and initial onChange backport for iOS 15.
     @ViewBuilder
     func onChange<V: Equatable>(

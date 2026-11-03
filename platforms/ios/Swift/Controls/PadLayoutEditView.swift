@@ -155,7 +155,7 @@ struct PadLayoutEditView: View {
                 .zIndex(2)
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
-            .onChange(of: splitKey, initial: true) {
+            .onChange(of: splitKey, initial: true) { _, _ in
                 heldSplit = liveSplit.map { (key: splitKey, gameHeight: $0.gameHeight, fit: $0.fit) }
             }
             .onAppear {
