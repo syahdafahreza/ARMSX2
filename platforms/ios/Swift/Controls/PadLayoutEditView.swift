@@ -1056,17 +1056,17 @@ private struct DraggableGroup: View {
                 }
         )
         .simultaneousGesture(
-            MagnifyGesture()
+            MagnificationGesture()
                 .onChanged { v in
                     if !hasPushedSnapshot {
                         onBeginEdit()
                         hasPushedSnapshot = true
                     }
-                    currentScale = v.magnification
+                    currentScale = v
                 }
                 .onEnded { v in
                     hasPushedSnapshot = false
-                    updateScale(magnification: v.magnification)
+                    updateScale(magnification: v)
                     currentScale = 1.0
                 }
         )
@@ -1231,17 +1231,17 @@ private struct DraggableButton: View {
                 }
         )
         .simultaneousGesture(
-            MagnifyGesture()
+            MagnificationGesture()
                 .onChanged { v in
                     if !hasPushedSnapshot {
                         onBeginEdit()
                         hasPushedSnapshot = true
                     }
-                    currentScale = v.magnification
+                    currentScale = v
                 }
                 .onEnded { v in
                     hasPushedSnapshot = false
-                    updateScale(magnification: v.magnification)
+                    updateScale(magnification: v)
                     currentScale = 1.0
                 }
         )
