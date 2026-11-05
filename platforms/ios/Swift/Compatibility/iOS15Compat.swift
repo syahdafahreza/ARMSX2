@@ -172,24 +172,6 @@ public extension NavigationStack {
     }
 }
 
-// MARK: - NavigationLink Value Compatibility for iOS 15
-
-public extension NavigationLink where Destination == EmptyView {
-    init<P: Hashable>(value: P?, @ViewBuilder label: () -> Label) {
-        self.init(destination: EmptyView(), label: label)
-    }
-}
-
-public extension NavigationLink where Destination == EmptyView, Label == Text {
-    init<P: Hashable>(_ titleKey: LocalizedStringKey, value: P?) {
-        self.init(destination: EmptyView(), label: { Text(titleKey) })
-    }
-
-    init<S: StringProtocol, P: Hashable>(_ title: S, value: P?) {
-        self.init(destination: EmptyView(), label: { Text(title) })
-    }
-}
-
 // MARK: - NavigationSplitView Compatibility
 
 /// Provides a NavigationSplitView fallback for iOS 15, while delegating

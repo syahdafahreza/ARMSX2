@@ -702,28 +702,24 @@ struct SettingsRootView: View {
         _ pane: SettingsPane,
         @ViewBuilder label: () -> LabelContent
     ) -> some View {
-        if #available(iOS 16.0, *) {
-            NavigationLink(value: pane, label: label)
-        } else {
-            NavigationLink(
-                destination: destinationForPane(pane),
-                isActive: Binding(
-                    get: { navigationPath.last == pane },
-                    set: { isActive in
-                        if isActive {
-                            if navigationPath.last != pane {
-                                navigationPath.append(pane)
-                            }
-                        } else {
-                            if navigationPath.last == pane {
-                                navigationPath.removeLast()
-                            }
+        NavigationLink(
+            destination: destinationForPane(pane),
+            isActive: Binding(
+                get: { navigationPath.last == pane },
+                set: { isActive in
+                    if isActive {
+                        if navigationPath.last != pane {
+                            navigationPath.append(pane)
+                        }
+                    } else {
+                        if navigationPath.last == pane {
+                            navigationPath.removeLast()
                         }
                     }
-                ),
-                label: label
-            )
-        }
+                }
+            ),
+            label: label
+        )
     }
 
     var body: some View {
