@@ -174,14 +174,27 @@ struct VirtualPadSettingsView: View {
                     showSkinImporter = true
                 }
 
-                NavigationLink(value: SettingsPane.skinBrowser) {
-                    Label("Browse Skins", systemImage: "square.grid.2x2")
-                }
-                .controllerAccessibilityActionTarget(
-                    id: settings.localized("Browse Skins"),
-                    label: settings.localized("Browse Skins")
-                ) {
-                    onOpenPane(.skinBrowser)
+                if #available(iOS 16.0, *) {
+                    NavigationLink(value: SettingsPane.skinBrowser) {
+                        Label("Browse Skins", systemImage: "square.grid.2x2")
+                    }
+                    .controllerAccessibilityActionTarget(
+                        id: settings.localized("Browse Skins"),
+                        label: settings.localized("Browse Skins")
+                    ) {
+                        onOpenPane(.skinBrowser)
+                    }
+                } else {
+                    NavigationLink(
+                        destination: SkinBrowserView(),
+                        label: { Label("Browse Skins", systemImage: "square.grid.2x2") }
+                    )
+                    .controllerAccessibilityActionTarget(
+                        id: settings.localized("Browse Skins"),
+                        label: settings.localized("Browse Skins")
+                    ) {
+                        onOpenPane(.skinBrowser)
+                    }
                 }
 
                 Text("Import loose PNG/JPG/WebP button images, a full portrait/landscape controller image, or a zipped skin pack. Button files can be named cross, circle, square, triangle, up, down, left, right, L1, R1, L2, R2, start, select, analog_base, or analog_stick.")

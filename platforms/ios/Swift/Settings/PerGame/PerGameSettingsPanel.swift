@@ -967,6 +967,38 @@ struct PerGameSettingsPanel: View {
                         controllerColumn == .detail
                             || controllerAlertSuppressesContentTargets
                     )
+                    .background(
+                        Group {
+                            if #available(iOS 16.0, *) {
+                                EmptyView()
+                            } else {
+                                NavigationLink(
+                                    destination: Group {
+                                        if let category = selectedControllerDetail {
+                                            detailContent(category)
+                                                .background {
+                                                    Color.clear
+                                                        .glassSurface(
+                                                            clear: false,
+                                                            cornerRadius: 0
+                                                        )
+                                                        .ignoresSafeArea()
+                                                }
+                                                .navigationTitle(
+                                                    settings.localized(category.titleKey)
+                                                )
+                                        }
+                                    },
+                                    isActive: Binding(
+                                        get: { selectedControllerDetail != nil },
+                                        set: { if !$0 { returnToControllerCategories(playsSemanticAudio: true) } }
+                                    ),
+                                    label: { EmptyView() }
+                                )
+                                .hidden()
+                            }
+                        }
+                    )
                     .navigationDestination(for: PerGameSettingsCategory.self) { category in
                         detailContent(category)
                             // A pushed portrait Form can otherwise install an

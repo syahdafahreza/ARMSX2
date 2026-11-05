@@ -334,14 +334,35 @@ struct GamepadSettingsView: View {
                 presentedPane = pane
             }
         } else {
-            NavigationLink(value: pane) {
-                label()
-            }
-            .controllerAccessibilityActionTarget(
-                id: id,
-                label: settings.localized(pane.title)
-            ) {
-                onOpenPane(pane)
+            if #available(iOS 16.0, *) {
+                NavigationLink(value: pane) {
+                    label()
+                }
+                .controllerAccessibilityActionTarget(
+                    id: id,
+                    label: settings.localized(pane.title)
+                ) {
+                    onOpenPane(pane)
+                }
+            } else {
+                NavigationLink(
+                    destination: Group {
+                        if pane == .controllerMacros {
+                            ControllerMacrosSettingsView()
+                        } else if pane == .localMultiplayer {
+                            LocalMultiplayerSettingsView()
+                        } else {
+                            EmptyView()
+                        }
+                    },
+                    label: label
+                )
+                .controllerAccessibilityActionTarget(
+                    id: id,
+                    label: settings.localized(pane.title)
+                ) {
+                    onOpenPane(pane)
+                }
             }
         }
     }

@@ -681,6 +681,51 @@ struct SettingsRootView: View {
         SettingsPane(rawValue: rememberedRootPaneRawValue)
     }
 
+    @ViewBuilder
+    private func destinationForPane(_ pane: SettingsPane) -> some View {
+        presentedSettingsDetail(for: pane)
+            // The safe area spacer already clears the tab bar.
+            .contentMargins(.bottom, 0, for: .scrollContent)
+            .background {
+                if pane != .appearance {
+                    settingsRightStickScrollTarget(
+                        id: "settings.detail-scroll.\(pane.rawValue)",
+                        isEnabled: menuTabIsActive
+                            && navigationPath.last == pane
+                    )
+                }
+            }
+    }
+
+    @ViewBuilder
+    private func settingsNavigationLink<LabelContent: View>(
+        _ pane: SettingsPane,
+        @ViewBuilder label: () -> LabelContent
+    ) -> some View {
+        if #available(iOS 16.0, *) {
+            NavigationLink(value: pane, label: label)
+        } else {
+            NavigationLink(
+                destination: destinationForPane(pane),
+                isActive: Binding(
+                    get: { navigationPath.last == pane },
+                    set: { isActive in
+                        if isActive {
+                            if navigationPath.last != pane {
+                                navigationPath.append(pane)
+                            }
+                        } else {
+                            if navigationPath.last == pane {
+                                navigationPath.removeLast()
+                            }
+                        }
+                    }
+                ),
+                label: label
+            )
+        }
+    }
+
     var body: some View {
 #if targetEnvironment(macCatalyst)
         NavigationSplitView {
@@ -735,17 +780,17 @@ struct SettingsRootView: View {
             }
 
             Section {
-                NavigationLink(value: SettingsPane.language) {
+                settingsNavigationLink(.language) {
                     Label(settings.localized("Language"), systemImage: "globe")
                 }
                 .controllerSettingsDestination(.language, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.appearance) {
+                settingsNavigationLink(.appearance) {
                     Label(settings.localized("Appearance"), systemImage: "paintpalette")
                 }
                 .controllerSettingsDestination(.appearance, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.appIcon) {
+                settingsNavigationLink(.appIcon) {
                     Label(settings.localized("App Icon"), systemImage: "app.badge")
                 }
                 .controllerSettingsDestination(.appIcon, path: $navigationPath)
@@ -755,32 +800,32 @@ struct SettingsRootView: View {
             }
 
             Section(settings.localized("Emulation")) {
-                NavigationLink(value: SettingsPane.emulator) {
+                settingsNavigationLink(.emulator) {
                     Label(settings.localized("Emulator"), systemImage: "cpu")
                 }
                 .controllerSettingsDestination(.emulator, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.graphics) {
+                settingsNavigationLink(.graphics) {
                     Label(settings.localized("Graphics"), systemImage: "paintbrush")
                 }
                 .controllerSettingsDestination(.graphics, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.shaders) {
+                settingsNavigationLink(.shaders) {
                     Label(settings.localized("Shaders"), systemImage: "camera.filters")
                 }
                 .controllerSettingsDestination(.shaders, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.texturePacks) {
+                settingsNavigationLink(.texturePacks) {
                     Label(settings.localized("Texture Packs"), systemImage: "photo.stack")
                 }
                 .controllerSettingsDestination(.texturePacks, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.framePacing) {
+                settingsNavigationLink(.framePacing) {
                     Label(settings.localized("Frame Pacing"), systemImage: "speedometer")
                 }
                 .controllerSettingsDestination(.framePacing, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.audio) {
+                settingsNavigationLink(.audio) {
                     Label(settings.localized("Audio"), systemImage: "speaker.wave.2")
                 }
                 .controllerSettingsDestination(.audio, path: $navigationPath)
@@ -788,17 +833,17 @@ struct SettingsRootView: View {
             }
 
             Section(settings.localized("Input")) {
-                NavigationLink(value: SettingsPane.gameController) {
+                settingsNavigationLink(.gameController) {
                     Label(settings.localized("Game Controller"), systemImage: "gamecontroller")
                 }
                 .controllerSettingsDestination(.gameController, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.virtualPad) {
+                settingsNavigationLink(.virtualPad) {
                     Label(settings.localized("Virtual Pad"), systemImage: "hand.draw")
                 }
                 .controllerSettingsDestination(.virtualPad, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.localMultiplayer) {
+                settingsNavigationLink(.localMultiplayer) {
                     Label(settings.localized("Local Multiplayer"), systemImage: "person.3")
                 }
                 .controllerSettingsDestination(.localMultiplayer, path: $navigationPath)
@@ -806,17 +851,17 @@ struct SettingsRootView: View {
             }
 
             Section(settings.localized("Storage & Memory")) {
-                NavigationLink(value: SettingsPane.memoryCards) {
+                settingsNavigationLink(.memoryCards) {
                     Label(settings.localized("Memory Cards"), systemImage: "memorychip")
                 }
                 .controllerSettingsDestination(.memoryCards, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.storage) {
+                settingsNavigationLink(.storage) {
                     Label(settings.localized("Storage"), systemImage: "internaldrive")
                 }
                 .controllerSettingsDestination(.storage, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.network) {
+                settingsNavigationLink(.network) {
                     Label(settings.localized("Network"), systemImage: "network")
                 }
                 .controllerSettingsDestination(.network, path: $navigationPath)
@@ -824,17 +869,17 @@ struct SettingsRootView: View {
             }
 
             Section(settings.localized("Features")) {
-                NavigationLink(value: SettingsPane.settingsPresets) {
+                settingsNavigationLink(.settingsPresets) {
                     Label(settings.localized("Settings Presets"), systemImage: "slider.horizontal.3")
                 }
                 .controllerSettingsDestination(.settingsPresets, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.retroAchievements) {
+                settingsNavigationLink(.retroAchievements) {
                     Label(settings.localized("RetroAchievements"), systemImage: "trophy")
                 }
                 .controllerSettingsDestination(.retroAchievements, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.customSkin) {
+                settingsNavigationLink(.customSkin) {
                     Label(
                         settings.localized("Custom Skin"),
                         systemImage: "paintpalette"
@@ -842,7 +887,7 @@ struct SettingsRootView: View {
                 }
                 .controllerSettingsDestination(.customSkin, path: $navigationPath)
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
-                NavigationLink(value: SettingsPane.overlay) {
+                settingsNavigationLink(.overlay) {
                     Label(settings.localized("Overlay (OSD)"), systemImage: "text.below.photo")
                 }
                 .controllerSettingsDestination(.overlay, path: $navigationPath)
@@ -875,7 +920,7 @@ struct SettingsRootView: View {
             }
 
             Section {
-                NavigationLink(value: SettingsPane.licenses) {
+                settingsNavigationLink(.licenses) {
                     Label(settings.localized("Licenses & Credits"), systemImage: "doc.text")
                 }
                 .controllerSettingsDestination(.licenses, path: $navigationPath)
@@ -892,7 +937,7 @@ struct SettingsRootView: View {
                 }
                 .gameCardTintMenuBackgroundListRow(backgroundActive)
 
-                NavigationLink(value: SettingsPane.help) {
+                settingsNavigationLink(.help) {
                     Label(settings.localized("Help"), systemImage: "questionmark.circle")
                 }
                 .controllerSettingsDestination(.help, path: $navigationPath)
@@ -991,25 +1036,8 @@ struct SettingsRootView: View {
             }
         }
         .navigationDestination(for: SettingsPane.self) { pane in
-            // NavigationStack also retains earlier destinations in a deep
-            // path (for example Game Controller -> Controller Macros). Keep
-            // their route values for Back navigation, but dismantle their
-            // Form/List trees, tasks, observers, controller targets, and
-            // scroll-discovery probes until they become the top destination
-            // again.
             if navigationPath.last == pane {
-                presentedSettingsDetail(for: pane)
-                // The safe area spacer already clears the tab bar.
-                .contentMargins(.bottom, 0, for: .scrollContent)
-                .background {
-                    if pane != .appearance {
-                        settingsRightStickScrollTarget(
-                            id: "settings.detail-scroll.\(pane.rawValue)",
-                            isEnabled: menuTabIsActive
-                                && navigationPath.last == pane
-                        )
-                    }
-                }
+                destinationForPane(pane)
             } else {
                 Color.clear
                     .allowsHitTesting(false)
