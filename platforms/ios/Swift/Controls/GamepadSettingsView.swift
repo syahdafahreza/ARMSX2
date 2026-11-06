@@ -335,7 +335,7 @@ struct GamepadSettingsView: View {
             }
         } else {
             NavigationLink(
-                destination: Group {
+                destination: AnyView(Group {
                     if pane == .controllerMacros {
                         ControllerMacrosSettingsView()
                     } else if pane == .localMultiplayer {
@@ -343,7 +343,7 @@ struct GamepadSettingsView: View {
                     } else {
                         EmptyView()
                     }
-                },
+                }),
                 label: label
             )
             .controllerAccessibilityActionTarget(

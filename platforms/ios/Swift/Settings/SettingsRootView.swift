@@ -681,20 +681,22 @@ struct SettingsRootView: View {
         SettingsPane(rawValue: rememberedRootPaneRawValue)
     }
 
-    @ViewBuilder
-    private func destinationForPane(_ pane: SettingsPane) -> some View {
-        presentedSettingsDetail(for: pane)
-            // The safe area spacer already clears the tab bar.
-            .contentMargins(.bottom, 0, for: .scrollContent)
-            .background {
-                if pane != .appearance {
-                    settingsRightStickScrollTarget(
-                        id: "settings.detail-scroll.\(pane.rawValue)",
-                        isEnabled: menuTabIsActive
-                            && navigationPath.last == pane
-                    )
+    private func destinationForPane(_ pane: SettingsPane?) -> AnyView {
+        guard let pane = pane else { return AnyView(EmptyView()) }
+        return AnyView(
+            presentedSettingsDetail(for: pane)
+                // The safe area spacer already clears the tab bar.
+                .contentMargins(.bottom, 0, for: .scrollContent)
+                .background {
+                    if pane != .appearance {
+                        settingsRightStickScrollTarget(
+                            id: "settings.detail-scroll.\(pane.rawValue)",
+                            isEnabled: menuTabIsActive
+                                && navigationPath.last == pane
+                        )
+                    }
                 }
-            }
+        )
     }
 
     @ViewBuilder
@@ -702,24 +704,19 @@ struct SettingsRootView: View {
         _ pane: SettingsPane,
         @ViewBuilder label: () -> LabelContent
     ) -> some View {
-        NavigationLink(
-            destination: destinationForPane(pane),
-            isActive: Binding(
-                get: { navigationPath.last == pane },
-                set: { isActive in
-                    if isActive {
-                        if navigationPath.last != pane {
-                            navigationPath.append(pane)
-                        }
-                    } else {
-                        if navigationPath.last == pane {
-                            navigationPath.removeLast()
-                        }
-                    }
-                }
-            ),
-            label: label
-        )
+        Button {
+            openPane(pane)
+        } label: {
+            HStack {
+                label()
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundColor(Color(UIColor.tertiaryLabel))
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     var body: some View {
@@ -1031,6 +1028,23 @@ struct SettingsRootView: View {
                 rememberControllerRootFocusIfAvailable()
             }
         }
+        .background(
+            Group {
+                if #available(iOS 16.0, *) {
+                    EmptyView()
+                } else {
+                    NavigationLink(
+                        destination: destinationForPane(navigationPath.last),
+                        isActive: Binding(
+                            get: { !navigationPath.isEmpty },
+                            set: { if !$0 && !navigationPath.isEmpty { navigationPath.removeLast() } }
+                        ),
+                        label: { EmptyView() }
+                    )
+                    .hidden()
+                }
+            }
+        )
         .navigationDestination(for: SettingsPane.self) { pane in
             if navigationPath.last == pane {
                 destinationForPane(pane)

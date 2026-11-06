@@ -973,7 +973,7 @@ struct PerGameSettingsPanel: View {
                                 EmptyView()
                             } else {
                                 NavigationLink(
-                                    destination: Group {
+                                    destination: AnyView(Group {
                                         if let category = selectedControllerDetail {
                                             detailContent(category)
                                                 .background {
@@ -988,7 +988,7 @@ struct PerGameSettingsPanel: View {
                                                     settings.localized(category.titleKey)
                                                 )
                                         }
-                                    },
+                                    }),
                                     isActive: Binding(
                                         get: { selectedControllerDetail != nil },
                                         set: { if !$0 { returnToControllerCategories(playsSemanticAudio: true) } }

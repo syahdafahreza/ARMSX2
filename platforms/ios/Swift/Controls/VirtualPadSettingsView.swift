@@ -175,7 +175,7 @@ struct VirtualPadSettingsView: View {
                 }
 
                 NavigationLink(
-                    destination: SkinBrowserView(),
+                    destination: AnyView(SkinBrowserView()),
                     label: { Label("Browse Skins", systemImage: "square.grid.2x2") }
                 )
                 .controllerAccessibilityActionTarget(
